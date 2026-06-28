@@ -1,0 +1,114 @@
+.sidebar {
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  background: rgba(10, 10, 20, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4) var(--space-3);
+  z-index: var(--z-sticky);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  color: var(--text-tertiary);
+  text-decoration: none;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  transition: all var(--duration-normal) var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: var(--accent-gradient);
+  border-radius: var(--radius-full);
+  transition: height var(--duration-normal) var(--ease-out);
+}
+
+.sidebar-link:hover {
+  color: var(--text-secondary);
+  background: var(--glass-bg);
+}
+
+.sidebar-link-active {
+  color: var(--text-primary);
+  background: var(--glass-bg-hover);
+}
+
+.sidebar-link-active::before {
+  height: 60%;
+}
+
+.sidebar-link-active .sidebar-icon {
+  color: var(--accent-start);
+}
+
+.sidebar-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.sidebar-label {
+  white-space: nowrap;
+}
+
+.sidebar-footer {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--glass-border);
+}
+
+.sidebar-version {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: calc(var(--z-sticky) - 1);
+    animation: fadeIn var(--duration-fast) var(--ease-out) both;
+  }
+}

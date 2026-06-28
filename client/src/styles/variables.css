@@ -1,0 +1,177 @@
+/* ============================================
+   HABITUAL — Design Token System
+   Dark-mode-first, glassmorphic, gamified UI
+   ============================================ */
+
+:root {
+  /* ---- Color Palette ---- */
+
+  /* Background Layers (darkest to lightest) */
+  --bg-base: #07070d;
+  --bg-primary: #0a0a14;
+  --bg-secondary: #10101f;
+  --bg-elevated: #16162a;
+  --bg-surface: #1c1c35;
+
+  /* Glass Effects */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-bg-hover: rgba(255, 255, 255, 0.06);
+  --glass-bg-active: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.14);
+  --glass-blur: 20px;
+
+  /* Accent Gradient — Violet → Fuchsia */
+  --accent-start: #8b5cf6;
+  --accent-mid: #a855f7;
+  --accent-end: #d946ef;
+  --accent-gradient: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  --accent-gradient-hover: linear-gradient(135deg, #9d6ff8, #e058f1);
+  --accent-glow: rgba(139, 92, 246, 0.25);
+  --accent-glow-strong: rgba(139, 92, 246, 0.45);
+
+  /* Text */
+  --text-primary: #f0f0f5;
+  --text-secondary: #9e9eb8;
+  --text-tertiary: #6b6b85;
+  --text-muted: #4a4a62;
+  --text-accent: #c084fc;
+
+  /* Status Colors */
+  --success: #34d399;
+  --success-bg: rgba(52, 211, 153, 0.12);
+  --success-border: rgba(52, 211, 153, 0.25);
+
+  --warning: #fbbf24;
+  --warning-bg: rgba(251, 191, 36, 0.12);
+  --warning-border: rgba(251, 191, 36, 0.25);
+
+  --error: #f87171;
+  --error-bg: rgba(248, 113, 113, 0.12);
+  --error-border: rgba(248, 113, 113, 0.25);
+
+  --info: #60a5fa;
+  --info-bg: rgba(96, 165, 250, 0.12);
+  --info-border: rgba(96, 165, 250, 0.25);
+
+  /* Coin/Reward Colors */
+  --coin-gold: #f59e0b;
+  --coin-glow: rgba(245, 158, 11, 0.35);
+  --streak-fire: #ef4444;
+  --streak-glow: rgba(239, 68, 68, 0.3);
+
+  /* Rarity Colors */
+  --rarity-common: #9ca3af;
+  --rarity-rare: #3b82f6;
+  --rarity-epic: #a855f7;
+  --rarity-legendary: #f59e0b;
+
+  /* Category Colors (for Habits) */
+  --cat-fitness: #f97316;
+  --cat-mindfulness: #8b5cf6;
+  --cat-nutrition: #22c55e;
+  --cat-sleep: #6366f1;
+  --cat-social: #ec4899;
+  --cat-learning: #06b6d4;
+
+  /* Priority Colors */
+  --priority-low: #6b7280;
+  --priority-medium: #3b82f6;
+  --priority-high: #f59e0b;
+  --priority-critical: #ef4444;
+
+
+  /* ---- Typography ---- */
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'Outfit', var(--font-body);
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Font Sizes */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.8125rem;  /* 13px */
+  --text-base: 0.9375rem;/* 15px */
+  --text-md: 1rem;       /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  --text-3xl: 1.875rem;  /* 30px */
+  --text-4xl: 2.25rem;   /* 36px */
+  --text-5xl: 3rem;      /* 48px */
+  --text-6xl: 3.75rem;   /* 60px */
+
+  /* Font Weights */
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  /* Line Heights */
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+
+
+  /* ---- Spacing (4px base) ---- */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+  --space-24: 6rem;     /* 96px */
+
+
+  /* ---- Border Radii ---- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-full: 9999px;
+
+
+  /* ---- Shadows ---- */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.25);
+  --shadow-xl: 0 16px 50px rgba(0, 0, 0, 0.5), 0 8px 16px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 20px var(--accent-glow), 0 0 60px rgba(139, 92, 246, 0.1);
+  --shadow-glow-strong: 0 0 30px var(--accent-glow-strong), 0 0 80px rgba(139, 92, 246, 0.15);
+  --shadow-coin: 0 0 15px var(--coin-glow), 0 0 40px rgba(245, 158, 11, 0.1);
+
+
+  /* ---- Transitions ---- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+
+
+  /* ---- Layout ---- */
+  --header-height: 64px;
+  --sidebar-width: 260px;
+  --sidebar-width-collapsed: 72px;
+  --content-max-width: 1200px;
+  --card-min-height: 120px;
+
+
+  /* ---- Z-Index Scale ---- */
+  --z-base: 0;
+  --z-elevated: 10;
+  --z-sticky: 100;
+  --z-overlay: 500;
+  --z-modal: 1000;
+  --z-toast: 1500;
+  --z-tooltip: 2000;
+}
