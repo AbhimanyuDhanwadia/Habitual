@@ -1,0 +1,87 @@
+.toast-container {
+  position: fixed;
+  top: calc(var(--header-height) + var(--space-4));
+  right: var(--space-4);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  background: var(--bg-elevated);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  pointer-events: auto;
+  animation: toastSlideIn 0.4s var(--ease-spring) both;
+  min-width: 260px;
+  max-width: 380px;
+}
+
+.toast-coin {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), var(--bg-elevated));
+}
+
+.toast-bonus {
+  border-color: rgba(139, 92, 246, 0.3);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), var(--bg-elevated));
+}
+
+.toast-milestone {
+  border-color: rgba(217, 70, 239, 0.3);
+  background: linear-gradient(135deg, rgba(217, 70, 239, 0.08), var(--bg-elevated));
+  animation: toastSlideIn 0.4s var(--ease-spring) both, pulse-glow 2s ease-in-out 0.5s 2;
+}
+
+.toast-success {
+  border-color: var(--success-border);
+}
+
+.toast-error {
+  border-color: var(--error-border);
+}
+
+.toast-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  animation: check-pop 0.5s var(--ease-spring) both;
+  animation-delay: 0.15s;
+}
+
+.toast-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toast-message {
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+
+.toast-sub {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
