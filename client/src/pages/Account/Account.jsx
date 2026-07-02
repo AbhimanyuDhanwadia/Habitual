@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useGame } from '../../contexts/GameContext';
 import { userAPI } from '../../services/api';
 import './Account.css';
 
 export default function Account() {
   const { user, updateUser } = useAuth();
-  const { addNotification } = useGame();
   const [editing, setEditing] = useState(false);
+  const [feedback, setFeedback] = useState(null);
   const [form, setForm] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -15,15 +14,20 @@ export default function Account() {
   });
   const [saving, setSaving] = useState(false);
 
+  const showFeedback = (message, type = 'success') => {
+    setFeedback({ message, type });
+    setTimeout(() => setFeedback(null), 3000);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
       const res = await userAPI.updateProfile(form);
       updateUser(res.data.user);
       setEditing(false);
-      addNotification({ type: 'success', message: 'Profile updated!' });
+      showFeedback('Profile updated successfully');
     } catch (err) {
-      addNotification({ type: 'error', message: err.response?.data?.message || 'Error updating profile' });
+      showFeedback(err.response?.data?.message || 'Error updating profile', 'error');
     } finally {
       setSaving(false);
     }
@@ -33,8 +37,15 @@ export default function Account() {
     <div className="account-page">
       <div className="account-header animate-fade-in-up">
         <h1>My Account</h1>
-        <p className="account-subtitle">Manage your profile and view your stats</p>
+        <p className="account-subtitle">Manage your profile and view your progress</p>
       </div>
+
+      {/* Inline Feedback */}
+      {feedback && (
+        <div className={`account-feedback badge badge-${feedback.type === 'error' ? 'error' : 'success'}`} style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3) var(--space-5)' }}>
+          {feedback.message}
+        </div>
+      )}
 
       <div className="account-grid">
         {/* Profile Card */}
@@ -91,27 +102,17 @@ export default function Account() {
 
         {/* Stats Card */}
         <div className="account-card glass-card animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-          <h3>Your Journey</h3>
+          <h3>Your Progress</h3>
           <div className="account-stats-grid">
             <div className="account-stat">
-              <span className="account-stat-icon">🔥</span>
+              <span className="account-stat-icon">📅</span>
               <span className="account-stat-value">{user?.currentStreak || 0}</span>
-              <span className="account-stat-label">Current Streak</span>
+              <span className="account-stat-label">Consecutive Days</span>
             </div>
             <div className="account-stat">
-              <span className="account-stat-icon">🏆</span>
+              <span className="account-stat-icon">📈</span>
               <span className="account-stat-value">{user?.longestStreak || 0}</span>
-              <span className="account-stat-label">Best Streak</span>
-            </div>
-            <div className="account-stat">
-              <span className="account-stat-icon">🪙</span>
-              <span className="account-stat-value">{user?.coins || 0}</span>
-              <span className="account-stat-label">Total Coins</span>
-            </div>
-            <div className="account-stat">
-              <span className="account-stat-icon">🎒</span>
-              <span className="account-stat-value">{user?.ownedItems?.length || 0}</span>
-              <span className="account-stat-label">Items Owned</span>
+              <span className="account-stat-label">Personal Best</span>
             </div>
           </div>
         </div>

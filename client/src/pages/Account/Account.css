@@ -1,34 +1,43 @@
+/* ============================================
+   Account — Neo Mirai warm panels, gold accents
+   ============================================ */
+
 .account-page { padding: var(--space-6); max-width: 900px; margin: 0 auto; }
 .account-header { margin-bottom: var(--space-8); }
-.account-header h1 { font-size: var(--text-3xl); margin-bottom: var(--space-1); }
-.account-subtitle { color: var(--text-tertiary); }
+.account-header h1 { font-family: var(--font-display); font-size: clamp(1.55rem, 3vw, 2.65rem); font-weight: var(--weight-light); text-transform: uppercase; margin-bottom: var(--space-1); }
+.account-subtitle { font-family: var(--font-serif); color: var(--ash); }
 
-.account-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+.account-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--line); }
 
-.account-card { padding: var(--space-8); }
-.account-card h3 { font-size: var(--text-xl); margin-bottom: var(--space-6); }
+.account-card { padding: var(--space-8); background: var(--paper-soft); border-radius: 0; }
+.account-grid > :first-child { border-right: 1px solid var(--line); }
+.account-card:hover { background: var(--paper-soft); box-shadow: none; border-color: var(--line); }
+.account-card h3 { font-family: var(--font-mono); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-transform: uppercase; margin-bottom: var(--space-6); }
 
 /* Profile */
-.account-avatar-section { text-align: center; padding-bottom: var(--space-6); border-bottom: 1px solid var(--glass-border); margin-bottom: var(--space-6); }
-.account-avatar { width: 80px; height: 80px; border-radius: var(--radius-full); background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-size: var(--text-2xl); font-weight: var(--weight-bold); color: #fff; margin: 0 auto var(--space-4); }
-.account-avatar-section h2 { font-size: var(--text-xl); margin-bottom: var(--space-1); }
-.account-username { color: var(--text-tertiary); font-size: var(--text-sm); }
+.account-avatar-section { text-align: center; padding-bottom: var(--space-6); border-bottom: 1px solid var(--line); margin-bottom: var(--space-6); }
+.account-avatar { width: 80px; height: 80px; border-radius: var(--radius-full); background: var(--gold); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: var(--text-2xl); font-weight: var(--weight-bold); color: var(--rice); margin: 0 auto var(--space-4); }
+.account-avatar-section h2 { font-family: var(--font-display); font-size: var(--text-xl); font-weight: var(--weight-light); text-transform: uppercase; margin-bottom: var(--space-1); }
+.account-username { font-family: var(--font-mono); color: var(--ash); font-size: var(--text-xs); text-transform: uppercase; }
 
-.account-info-row { display: flex; justify-content: space-between; padding: var(--space-3) 0; border-bottom: 1px solid var(--glass-border); }
-.account-info-label { font-size: var(--text-sm); color: var(--text-tertiary); }
-.account-info-value { font-size: var(--text-sm); color: var(--text-primary); font-weight: var(--weight-medium); }
+.account-info-row { display: flex; justify-content: space-between; padding: var(--space-3) 0; border-bottom: 1px solid var(--line); }
+.account-info-label { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ash); text-transform: uppercase; }
+.account-info-value { font-family: var(--font-serif); font-size: var(--text-sm); color: var(--ink); font-weight: var(--weight-medium); }
 
 .account-edit-form { display: flex; flex-direction: column; gap: var(--space-4); }
 .account-edit-actions { display: flex; gap: var(--space-3); justify-content: flex-end; margin-top: var(--space-2); }
 
 /* Stats */
-.account-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
-.account-stat { display: flex; flex-direction: column; align-items: center; text-align: center; padding: var(--space-4); background: var(--glass-bg); border-radius: var(--radius-md); }
+.account-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--line); }
+.account-stat { display: flex; flex-direction: column; align-items: center; text-align: center; padding: var(--space-4); background: var(--rice); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.account-stat:nth-child(2n) { border-right: none; }
+.account-stat:nth-child(n+3) { border-bottom: none; }
 .account-stat-icon { font-size: 2rem; margin-bottom: var(--space-2); }
-.account-stat-value { font-family: var(--font-heading); font-size: var(--text-2xl); font-weight: var(--weight-bold); color: var(--text-primary); }
-.account-stat-label { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: var(--space-1); }
+.account-stat-value { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: var(--weight-light); color: var(--ink); }
+.account-stat-label { font-family: var(--font-mono); font-size: 9px; color: var(--ash); margin-top: var(--space-1); text-transform: uppercase; }
 
 @media (max-width: 768px) {
   .account-page { padding: var(--space-4); }
   .account-grid { grid-template-columns: 1fr; }
+  .account-grid > :first-child { border-right: none; border-bottom: 1px solid var(--line); }
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { GameProvider } from './contexts/GameContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import Header from './components/Header/Header';
 import Sidebar from './components/Sidebar/Sidebar';
@@ -12,7 +12,6 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import DailyTasks from './pages/DailyTasks/DailyTasks';
 import TodoList from './pages/TodoList/TodoList';
 import Habits from './pages/Habits/Habits';
-import Shop from './pages/Shop/Shop';
 import Account from './pages/Account/Account';
 import './styles/global.css';
 
@@ -50,7 +49,6 @@ function AppLayout() {
           <Route path="/tasks" element={<ProtectedRoute><DailyTasks /></ProtectedRoute>} />
           <Route path="/todos" element={<ProtectedRoute><TodoList /></ProtectedRoute>} />
           <Route path="/habits" element={<ProtectedRoute><Habits /></ProtectedRoute>} />
-          <Route path="/shop" element={<ProtectedRoute><Shop /></ProtectedRoute>} />
           <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
         </Routes>
       </main>
@@ -64,9 +62,9 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <GameProvider>
+        <NotificationProvider>
           <AppLayout />
-        </GameProvider>
+        </NotificationProvider>
       </AuthProvider>
     </Router>
   );

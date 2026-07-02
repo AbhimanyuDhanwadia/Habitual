@@ -1,3 +1,7 @@
+/* ============================================
+   Dashboard — Neo Mirai warm paper cards
+   ============================================ */
+
 .dashboard {
   padding: var(--space-6);
   max-width: var(--content-max-width);
@@ -17,21 +21,27 @@
 }
 
 .dash-greeting {
-  font-size: var(--text-3xl);
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 3vw, 2.65rem);
+  font-weight: var(--weight-light);
+  text-transform: uppercase;
   margin-bottom: var(--space-1);
 }
 
 .dash-date {
-  font-size: var(--text-base);
-  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ash);
+  text-transform: uppercase;
 }
 
 /* Stats Row */
 .dash-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-4);
+  gap: 0;
   margin-bottom: var(--space-8);
+  border: 1px solid var(--line);
 }
 
 .dash-stat-card {
@@ -39,12 +49,23 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-5);
+  background: var(--paper-soft);
+  border-right: 1px solid var(--line);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.dash-stat-card:last-child {
+  border-right: none;
+}
+
+.dash-stat-card:hover {
+  background: var(--paper-deep);
 }
 
 .stat-icon {
   width: 48px;
   height: 48px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -52,10 +73,10 @@
   flex-shrink: 0;
 }
 
-.stat-icon-streak { background: rgba(239, 68, 68, 0.12); }
-.stat-icon-coins { background: rgba(245, 158, 11, 0.12); }
-.stat-icon-tasks { background: rgba(52, 211, 153, 0.12); }
-.stat-icon-percent { background: rgba(139, 92, 246, 0.12); }
+.stat-icon-streak { background: oklch(64% 0.19 43 / 0.10); }
+.stat-icon-coins  { background: oklch(68% 0.145 74 / 0.10); }
+.stat-icon-tasks  { background: oklch(62% 0.17 155 / 0.10); }
+.stat-icon-percent { background: oklch(52% 0.17 38 / 0.10); }
 
 .stat-info {
   display: flex;
@@ -63,31 +84,41 @@
 }
 
 .stat-value {
-  font-family: var(--font-heading);
+  font-family: var(--font-display);
   font-size: var(--text-2xl);
-  font-weight: var(--weight-bold);
-  color: var(--text-primary);
+  font-weight: var(--weight-light);
+  color: var(--ink);
   line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .stat-label {
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ash);
+  text-transform: uppercase;
 }
 
 /* Main Grid */
 .dash-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-6);
+  gap: 0;
+  border: 1px solid var(--line);
 }
 
 .dash-grid > :nth-child(3) {
   grid-column: 1 / -1;
+  border-top: 1px solid var(--line);
 }
 
 .dash-card {
   padding: var(--space-6);
+  background: var(--paper-soft);
+}
+
+.dash-grid > :nth-child(1) {
+  border-right: 1px solid var(--line);
 }
 
 .dash-card-header {
@@ -98,8 +129,11 @@
 }
 
 .dash-card-title {
-  font-size: var(--text-lg);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 /* Empty State */
@@ -118,10 +152,10 @@
 }
 
 .dash-empty p {
-  color: var(--text-tertiary);
+  color: var(--ash);
 }
 
-/* Task List */
+/* Task List — timeline pattern */
 .dash-task-list {
   display: flex;
   flex-direction: column;
@@ -133,19 +167,19 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
   transition: background var(--duration-fast) var(--ease-out);
+  position: relative;
 }
 
 .dash-task-item:hover {
-  background: var(--glass-bg);
+  background: var(--paper-deep);
 }
 
 .dash-task-check {
   width: 20px;
   height: 20px;
-  border-radius: 6px;
-  border: 2px solid var(--text-muted);
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--line);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -156,19 +190,20 @@
 }
 
 .dash-task-check.checked {
-  background: var(--accent-gradient);
-  border-color: transparent;
-  color: #fff;
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--rice);
 }
 
 .dash-task-text {
+  font-family: var(--font-serif);
   font-size: var(--text-base);
-  color: var(--text-secondary);
+  color: var(--ink-soft);
   transition: all var(--duration-normal) var(--ease-out);
 }
 
 .dash-task-done .dash-task-text {
-  color: var(--text-muted);
+  color: var(--ash);
 }
 
 .strikethrough {
@@ -176,37 +211,39 @@
 }
 
 .dash-more {
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ash);
   text-align: center;
   padding-top: var(--space-2);
+  text-transform: uppercase;
 }
 
 /* Progress Bar */
 .dash-progress {
   margin-top: var(--space-4);
   padding-top: var(--space-4);
-  border-top: 1px solid var(--glass-border);
+  border-top: 1px solid var(--line);
 }
 
 .dash-progress-bar {
-  height: 6px;
-  background: var(--bg-surface);
-  border-radius: var(--radius-full);
+  height: 4px;
+  background: var(--paper-deep);
   overflow: hidden;
   margin-bottom: var(--space-2);
 }
 
 .dash-progress-fill {
   height: 100%;
-  background: var(--accent-gradient);
-  border-radius: var(--radius-full);
+  background: var(--sun);
   transition: width 0.8s var(--ease-out);
 }
 
 .dash-progress-text {
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ash);
+  text-transform: uppercase;
 }
 
 /* Todo List */
@@ -218,14 +255,13 @@
 
 .dash-todo-item {
   padding: var(--space-3);
-  border-radius: var(--radius-sm);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: var(--rice);
+  border: 1px solid var(--line);
   transition: all var(--duration-fast) var(--ease-out);
 }
 
 .dash-todo-item:hover {
-  background: var(--glass-bg-hover);
+  background: var(--paper-deep);
 }
 
 .dash-todo-top {
@@ -242,15 +278,17 @@
   flex-shrink: 0;
 }
 
-.priority-low { background: var(--priority-low); }
-.priority-medium { background: var(--priority-medium); }
-.priority-high { background: var(--priority-high); }
+.priority-low      { background: var(--priority-low); }
+.priority-medium   { background: var(--priority-medium); }
+.priority-high     { background: var(--priority-high); }
 .priority-critical { background: var(--priority-critical); }
 
 .dash-todo-title {
-  font-size: var(--text-base);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
   font-weight: var(--weight-medium);
-  color: var(--text-primary);
+  color: var(--ink);
+  text-transform: uppercase;
 }
 
 .dash-todo-meta {
@@ -261,8 +299,9 @@
 }
 
 .dash-todo-deadline {
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--text-tertiary);
+  color: var(--ash);
 }
 
 .deadline-urgent {
@@ -271,11 +310,12 @@
 }
 
 .dash-todo-phases {
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--text-muted);
+  color: var(--ash);
 }
 
-/* Mini Calendar */
+/* Mini Calendar — warm gold heatmap */
 .mini-cal {
   width: 100%;
 }
@@ -289,10 +329,12 @@
 
 .mini-cal-day-label {
   text-align: center;
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
-  color: var(--text-muted);
+  color: var(--ash);
   padding: var(--space-1) 0;
+  text-transform: uppercase;
 }
 
 .mini-cal-grid {
@@ -306,9 +348,9 @@
   align-items: center;
   justify-content: center;
   aspect-ratio: 1;
-  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--text-tertiary);
+  color: var(--ash);
   cursor: default;
   transition: all var(--duration-fast) var(--ease-out);
 }
@@ -319,32 +361,44 @@
 
 .mini-cal-today {
   font-weight: var(--weight-bold);
-  color: var(--text-primary);
-  border: 1px solid var(--accent-start);
+  color: var(--ink);
+  border: 1px solid var(--gold);
 }
 
 .cal-full {
-  background: rgba(139, 92, 246, 0.25);
-  color: var(--text-primary);
+  background: oklch(68% 0.145 74 / 0.30);
+  color: var(--ink);
 }
 
 .cal-high {
-  background: rgba(139, 92, 246, 0.15);
-  color: var(--text-secondary);
+  background: oklch(68% 0.145 74 / 0.18);
+  color: var(--ink-soft);
 }
 
 .cal-low {
-  background: rgba(139, 92, 246, 0.06);
+  background: oklch(68% 0.145 74 / 0.08);
 }
 
 .cal-none {
-  background: rgba(239, 68, 68, 0.08);
+  background: oklch(55% 0.22 28 / 0.06);
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
   .dash-stats {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dash-stat-card:nth-child(2) {
+    border-right: none;
+  }
+
+  .dash-stat-card:nth-child(n+3) {
+    border-top: 1px solid var(--line);
+  }
+
+  .dash-stat-card:nth-child(3) {
+    border-right: 1px solid var(--line);
   }
 }
 
@@ -355,11 +409,16 @@
 
   .dash-stats {
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-3);
+    gap: 0;
   }
 
   .dash-grid {
     grid-template-columns: 1fr;
+  }
+
+  .dash-grid > :nth-child(1) {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
   }
 
   .dash-grid > :nth-child(3) {

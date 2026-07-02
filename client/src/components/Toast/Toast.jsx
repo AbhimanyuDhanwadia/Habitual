@@ -1,8 +1,8 @@
-import { useGame } from '../../contexts/GameContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import './Toast.css';
 
 export default function Toast() {
-  const { notifications, removeNotification } = useGame();
+  const { notifications, removeNotification } = useNotifications();
 
   if (notifications.length === 0) return null;
 
@@ -15,12 +15,10 @@ export default function Toast() {
           onClick={() => removeNotification(notification.id)}
         >
           <div className="toast-icon">
-            {notification.type === 'coin' && '🪙'}
-            {notification.type === 'bonus' && '🎉'}
-            {notification.type === 'milestone' && '🏆'}
             {notification.type === 'success' && '✅'}
             {notification.type === 'error' && '❌'}
             {notification.type === 'info' && 'ℹ️'}
+            {notification.type === 'warning' && '⚠️'}
           </div>
           <div className="toast-content">
             <span className="toast-message">{notification.message}</span>

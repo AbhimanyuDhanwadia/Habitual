@@ -1,12 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useGame } from '../../contexts/GameContext';
 import { tasksAPI } from '../../services/api';
 import './DailyTasks.css';
 
 export default function DailyTasks() {
   const { user, updateUser } = useAuth();
-  const { processReward } = useGame();
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -61,11 +59,8 @@ export default function DailyTasks() {
       const res = await tasksAPI.toggle(taskId);
       setTasks(tasks.map(t => t._id === taskId ? res.data.task : t));
 
-      // Process gamification rewards
+      // Update user streak in auth context
       if (res.data.task.completed) {
-        processReward(res.data.reward, res.data.streakUpdate);
-
-        // Update user coins/streak in auth context
         if (res.data.reward) {
           updateUser({
             coins: res.data.reward.totalCoins || res.data.reward.coins,
@@ -279,19 +274,14 @@ export default function DailyTasks() {
         <div className="quick-stats glass-card animate-fade-in-up" style={{ animationDelay: '150ms' }}>
           <h3>Your Stats</h3>
           <div className="quick-stat-item">
-            <span className="quick-stat-icon">🔥</span>
-            <span className="quick-stat-label">Current Streak</span>
+            <span className="quick-stat-icon">📅</span>
+            <span className="quick-stat-label">Consecutive Days</span>
             <span className="quick-stat-value">{user?.currentStreak || 0} days</span>
           </div>
           <div className="quick-stat-item">
-            <span className="quick-stat-icon">🏆</span>
-            <span className="quick-stat-label">Best Streak</span>
+            <span className="quick-stat-icon">📈</span>
+            <span className="quick-stat-label">Personal Best</span>
             <span className="quick-stat-value">{user?.longestStreak || 0} days</span>
-          </div>
-          <div className="quick-stat-item">
-            <span className="quick-stat-icon">🪙</span>
-            <span className="quick-stat-label">Coins</span>
-            <span className="quick-stat-value">{user?.coins || 0}</span>
           </div>
         </div>
       </aside>

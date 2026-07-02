@@ -34,7 +34,7 @@ export default function Auth() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { register, login, isAuthenticated, error: authError } = useAuth();
+  const { register, login, dummyLogin, isAuthenticated, error: authError } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -132,8 +132,8 @@ export default function Auth() {
         </h1>
         <p className="auth-subtitle">
           {isSignup
-            ? step === 1 ? 'Start your productivity journey today' : 'Pick a starting avatar — you can unlock more in the shop!'
-            : 'Log in to continue your streak'
+            ? step === 1 ? 'Start your productivity journey today' : 'Pick a starting avatar to personalize your profile'
+            : 'Log in to continue where you left off'
           }
         </p>
 
@@ -258,6 +258,17 @@ export default function Auth() {
               }
             </span>
           </button>
+
+          {!isSignup && (
+            <button
+              type="button"
+              className="btn-ghost auth-submit"
+              onClick={dummyLogin}
+              style={{ marginTop: '10px' }}
+            >
+              <span>Log In as Guest (Dummy)</span>
+            </button>
+          )}
 
           {isSignup && step === 2 && (
             <button type="button" className="btn-ghost auth-back" onClick={() => setStep(1)}>

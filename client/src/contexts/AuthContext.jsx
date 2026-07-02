@@ -72,6 +72,26 @@ export function AuthProvider({ children }) {
         dispatch({ type: 'AUTH_ERROR', payload: null });
         return;
       }
+      
+      // Dummy mode check
+      if (token === 'dummy_token_12345') {
+        const fakeUser = {
+          _id: "dummy_id",
+          email: "dummy@example.com",
+          firstName: "Dummy",
+          lastName: "User",
+          username: "dummyuser",
+          avatar: "default-1",
+          coins: 1000,
+          currentStreak: 5,
+          longestStreak: 12,
+          ownedItems: [],
+          adoptedHabits: []
+        };
+        dispatch({ type: 'AUTH_LOADED', payload: { user: fakeUser } });
+        return;
+      }
+
       try {
         const res = await authAPI.getMe();
         dispatch({ type: 'AUTH_LOADED', payload: { user: res.data.user } });
@@ -111,6 +131,26 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const dummyLogin = () => {
+    const fakeToken = "dummy_token_12345";
+    const fakeUser = {
+      _id: "dummy_id",
+      email: "dummy@example.com",
+      firstName: "Dummy",
+      lastName: "User",
+      username: "dummyuser",
+      avatar: "default-1",
+      coins: 1000,
+      currentStreak: 5,
+      longestStreak: 12,
+      ownedItems: [],
+      adoptedHabits: []
+    };
+    localStorage.setItem('habitual_token', fakeToken);
+    dispatch({ type: 'AUTH_SUCCESS', payload: { user: fakeUser, token: fakeToken } });
+    return { success: true, message: "Logged in as Dummy User" };
+  };
+
   const logout = () => {
     localStorage.removeItem('habitual_token');
     dispatch({ type: 'LOGOUT' });
@@ -129,6 +169,7 @@ export function AuthProvider({ children }) {
       ...state,
       register,
       login,
+      dummyLogin,
       logout,
       updateUser,
       clearError,

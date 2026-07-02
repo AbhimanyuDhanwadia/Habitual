@@ -1,3 +1,7 @@
+/* ============================================
+   Toast — Neo Mirai flat paper notifications
+   ============================================ */
+
 .toast-container {
   position: fixed;
   top: calc(var(--header-height) + var(--space-4));
@@ -14,11 +18,8 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-5);
-  background: var(--bg-elevated);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
+  background: var(--paper);
+  border: 1px solid var(--line);
   box-shadow: var(--shadow-lg);
   cursor: pointer;
   pointer-events: auto;
@@ -28,19 +29,19 @@
 }
 
 .toast-coin {
-  border-color: rgba(245, 158, 11, 0.3);
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), var(--bg-elevated));
+  border-color: oklch(68% 0.145 74 / 0.5);
+  background: linear-gradient(135deg, oklch(68% 0.145 74 / 0.06), var(--paper));
 }
 
 .toast-bonus {
-  border-color: rgba(139, 92, 246, 0.3);
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), var(--bg-elevated));
+  border-color: oklch(64% 0.19 43 / 0.4);
+  background: linear-gradient(135deg, oklch(64% 0.19 43 / 0.06), var(--paper));
 }
 
 .toast-milestone {
-  border-color: rgba(217, 70, 239, 0.3);
-  background: linear-gradient(135deg, rgba(217, 70, 239, 0.08), var(--bg-elevated));
-  animation: toastSlideIn 0.4s var(--ease-spring) both, pulse-glow 2s ease-in-out 0.5s 2;
+  border-color: var(--sun);
+  background: linear-gradient(135deg, oklch(64% 0.19 43 / 0.08), var(--paper));
+  animation: toastSlideIn 0.4s var(--ease-spring) both;
 }
 
 .toast-success {
@@ -65,14 +66,16 @@
 }
 
 .toast-message {
+  font-family: var(--font-mono);
   font-weight: var(--weight-semibold);
-  font-size: var(--text-base);
-  color: var(--text-primary);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  text-transform: uppercase;
 }
 
 .toast-sub {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
 }
 
 @keyframes toastSlideIn {
