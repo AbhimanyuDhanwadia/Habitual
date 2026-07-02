@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:5001/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -25,6 +25,70 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    const token = localStorage.getItem('habitual_token');
+    // If it's the dummy token, don't trigger the logout loop
+    if (token === 'dummy_token_12345') {
+      console.log('Dummy mode: Ignored 401 error from backend');
+      
+      // Provide mock responses for dummy mode so UI doesn't crash
+      const method = error.config?.method?.toLowerCase();
+      const url = error.config?.url || '';
+
+      if (url.includes('/tasks')) {
+        if (method === 'post') {
+          const payload = error.config.data ? JSON.parse(error.config.data) : {};
+          return Promise.resolve({
+            data: {
+              task: {
+                _id: 'dummy_' + Date.now(),
+                title: payload.title || 'Dummy Task',
+                date: payload.date || new Date().toISOString(),
+                completed: false,
+                isHabitGenerated: false
+              }
+            }
+          });
+        }
+        if (method === 'get' && url.includes('history')) return Promise.resolve({ data: { history: [] } });
+        if (method === 'get') return Promise.resolve({ data: { tasks: [] } });
+        if (method === 'patch') {
+           return Promise.resolve({ 
+             data: { 
+               task: { _id: url.split('/').slice(-2, -1)[0] || 'dummy', completed: true },
+               reward: { coins: 10 },
+               streakUpdate: { currentStreak: 1, longestStreak: 1 }
+             } 
+           });
+        }
+        if (method === 'delete') return Promise.resolve({ data: { success: true } });
+      }
+
+      if (url.includes('/todos')) {
+        if (method === 'get') return Promise.resolve({ data: { todos: [] } });
+        if (method === 'post' || method === 'patch') {
+          return Promise.resolve({
+            data: {
+              todo: { _id: 'dummy_todo_' + Date.now(), title: 'Dummy Todo', currentPhase: 0, completed: false, phases: [] }
+            }
+          });
+        }
+        if (method === 'delete') return Promise.resolve({ data: { success: true } });
+      }
+
+      if (url.includes('/habits')) {
+        if (method === 'get') return Promise.resolve({ data: { habits: [] } });
+        if (method === 'post') return Promise.resolve({ data: { message: 'Action completed in dummy mode' } });
+      }
+
+      if (url.includes('/user')) {
+        if (method === 'get') return Promise.resolve({ data: { stats: {} } });
+        if (method === 'patch') return Promise.resolve({ data: { user: { coins: 100, currentStreak: 1, longestStreak: 1 } } });
+      }
+
+      // Default fake response or reject
+      return Promise.reject(error); 
+    }
+
     if (error.response?.status === 401) {
       localStorage.removeItem('habitual_token');
       // Don't redirect if already on auth page
@@ -67,13 +131,6 @@ export const habitsAPI = {
   getById: (id) => api.get(`/habits/${id}`),
   adopt: (id) => api.post(`/habits/${id}/adopt`),
   unadopt: (id) => api.post(`/habits/${id}/unadopt`),
-};
-
-// ---- Shop API ----
-export const shopAPI = {
-  getItems: (type) => api.get('/shop', { params: { type } }),
-  purchase: (itemId) => api.post(`/shop/purchase/${itemId}`),
-  getInventory: () => api.get('/shop/inventory'),
 };
 
 // ---- User API ----

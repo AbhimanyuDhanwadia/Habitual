@@ -1,63 +1,88 @@
+/* ============================================
+   Todo List — Neo Mirai flat cards, timeline
+   ============================================ */
+
 .todo-page { padding: var(--space-6); max-width: var(--content-max-width); margin: 0 auto; }
 .todo-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--space-6); }
-.todo-header h1 { font-size: var(--text-3xl); margin-bottom: var(--space-1); }
-.todo-subtitle { color: var(--text-tertiary); }
+.todo-header h1 { font-family: var(--font-display); font-size: clamp(1.55rem, 3vw, 2.65rem); font-weight: var(--weight-light); text-transform: uppercase; margin-bottom: var(--space-1); }
+.todo-subtitle { font-family: var(--font-serif); color: var(--ash); }
+
 .todo-filters { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6); }
-.todo-filter-group { display: flex; gap: var(--space-1); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 3px; }
-.todo-filter-btn { padding: var(--space-2) var(--space-4); border-radius: var(--radius-sm); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--text-tertiary); background: none; border: none; cursor: pointer; transition: all var(--duration-fast) var(--ease-out); }
-.todo-filter-btn:hover { color: var(--text-secondary); }
-.todo-filter-btn.active { background: var(--accent-gradient); color: #fff; }
-.todo-sort { max-width: 160px; padding: var(--space-2) var(--space-3); font-size: var(--text-sm); }
+.todo-filter-group { display: flex; gap: 0; border: 1px solid var(--line); padding: 0; }
+.todo-filter-btn { padding: var(--space-2) var(--space-4); font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ash); text-transform: uppercase; background: none; border: none; border-right: 1px solid var(--line); cursor: pointer; transition: all var(--duration-fast) var(--ease-out); }
+.todo-filter-btn:last-child { border-right: none; }
+.todo-filter-btn:hover { color: var(--ink-soft); }
+.todo-filter-btn.active { background: var(--gold); color: var(--rice); }
+.todo-sort { max-width: 160px; padding: var(--space-2) var(--space-3); font-family: var(--font-mono); font-size: var(--text-xs); text-transform: uppercase; }
 .todo-loading { display: flex; justify-content: center; padding: var(--space-16); }
 .todo-empty { text-align: center; padding: var(--space-16) var(--space-8); }
 .todo-empty-icon { font-size: 3rem; display: block; margin-bottom: var(--space-4); }
-.todo-empty h3 { margin-bottom: var(--space-2); }
-.todo-empty p { color: var(--text-tertiary); }
+.todo-empty h3 { font-family: var(--font-mono); text-transform: uppercase; margin-bottom: var(--space-2); }
+.todo-empty p { font-family: var(--font-serif); color: var(--ash); }
 
 /* Grid */
-.todo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: var(--space-5); }
+.todo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 0; border: 1px solid var(--line); }
 
 /* Card */
-.todo-card { padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); }
+.todo-card { padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); background: var(--paper-soft); border-bottom: 1px solid var(--line); border-radius: 0; transition: background var(--duration-fast) var(--ease-out); }
+.todo-card:hover { background: var(--paper-deep); box-shadow: none; border-color: var(--line); }
 .todo-done { opacity: 0.6; }
 .todo-card-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-2); }
-.todo-priority-badge { padding: 2px 10px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: 0.05em; }
-.priority-low { background: rgba(107, 114, 128, 0.15); color: var(--priority-low); }
-.priority-medium { background: rgba(59, 130, 246, 0.15); color: var(--priority-medium); }
-.priority-high { background: rgba(245, 158, 11, 0.15); color: var(--priority-high); }
-.priority-critical { background: rgba(239, 68, 68, 0.15); color: var(--priority-critical); }
-.todo-deadline-badge { font-size: var(--text-xs); color: var(--text-tertiary); }
-.deadline-warning { color: var(--warning); }
+.todo-priority-badge { padding: 2px 10px; font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: 0.05em; }
+.priority-low { background: oklch(54% 0.04 80 / 0.12); color: var(--priority-low); }
+.priority-medium { background: oklch(68% 0.145 74 / 0.12); color: var(--priority-medium); }
+.priority-high { background: oklch(64% 0.19 43 / 0.12); color: var(--priority-high); }
+.priority-critical { background: oklch(55% 0.22 28 / 0.12); color: var(--priority-critical); }
+.todo-deadline-badge { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ash); text-transform: uppercase; }
+.deadline-warning { color: var(--gold-bright); }
 .deadline-critical { color: var(--error); font-weight: var(--weight-semibold); }
-.todo-card-title { font-size: var(--text-xl); font-weight: var(--weight-semibold); }
-.todo-card-desc { font-size: var(--text-sm); color: var(--text-secondary); line-height: var(--leading-relaxed); }
+.todo-card-title { font-family: var(--font-display); font-size: var(--text-xl); font-weight: var(--weight-medium); text-transform: uppercase; }
+.todo-card-desc { font-family: var(--font-serif); font-size: var(--text-sm); color: var(--ink-soft); line-height: var(--leading-relaxed); }
 
-/* Phase Timeline */
+/* Phase Timeline — Neo Mirai connector pattern */
 .phase-timeline { display: flex; flex-direction: column; gap: 0; }
 .phase-progress-row { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
-.phase-progress-bar { flex: 1; height: 4px; background: var(--bg-surface); border-radius: var(--radius-full); overflow: hidden; }
-.phase-progress-fill { height: 100%; background: var(--accent-gradient); border-radius: var(--radius-full); transition: width 0.6s var(--ease-out); }
-.phase-progress-text { font-size: var(--text-xs); color: var(--text-tertiary); white-space: nowrap; }
+.phase-progress-bar { flex: 1; height: 4px; background: var(--paper-deep); overflow: hidden; }
+.phase-progress-fill { height: 100%; background: var(--sun); transition: width 0.6s var(--ease-out); }
+.phase-progress-text { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ash); white-space: nowrap; text-transform: uppercase; }
+
 .phase-item { display: flex; align-items: flex-start; gap: var(--space-3); position: relative; padding-left: var(--space-1); padding-bottom: var(--space-3); }
-.phase-dot { width: 22px; height: 22px; border-radius: var(--radius-full); border: 2px solid var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: var(--weight-bold); flex-shrink: 0; transition: all var(--duration-normal) var(--ease-spring); color: transparent; background: none; cursor: pointer; position: relative; z-index: 1; }
-.phase-dot:hover { border-color: var(--accent-start); }
-.phase-dot-done { background: var(--accent-gradient); border-color: transparent; color: #fff; animation: check-pop 0.4s var(--ease-spring); }
+
+.phase-dot {
+  width: 22px; height: 22px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--line);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: var(--weight-bold);
+  flex-shrink: 0;
+  transition: all var(--duration-normal) var(--ease-out);
+  color: transparent; background: none; cursor: pointer;
+  position: relative; z-index: 1;
+}
+.phase-dot:hover { border-color: var(--gold); }
+.phase-dot-done {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--rice);
+  animation: check-pop 0.4s var(--ease-spring);
+}
+
 .phase-info { flex: 1; }
-.phase-title { font-size: var(--text-sm); color: var(--text-primary); display: block; }
-.phase-title-done { color: var(--text-muted); text-decoration: line-through; }
-.phase-deadline { font-size: var(--text-xs); color: var(--text-muted); }
-.phase-connector { position: absolute; left: calc(var(--space-1) + 10px); top: 22px; width: 2px; height: calc(100% - 22px); background: var(--glass-border); z-index: 0; }
-.connector-done { background: var(--accent-start); }
+.phase-title { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--ink); text-transform: uppercase; display: block; }
+.phase-title-done { color: var(--ash); text-decoration: line-through; text-decoration-color: var(--gold); }
+.phase-deadline { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ash); }
+.phase-connector { position: absolute; left: calc(var(--space-1) + 10px); top: 22px; width: 1px; height: calc(100% - 22px); background: var(--line); z-index: 0; }
+.connector-done { background: var(--gold-bright); }
 
 /* Card Actions */
-.todo-card-actions { display: flex; gap: var(--space-2); border-top: 1px solid var(--glass-border); padding-top: var(--space-3); margin-top: auto; }
+.todo-card-actions { display: flex; gap: var(--space-2); border-top: 1px solid var(--line); padding-top: var(--space-3); margin-top: auto; }
 .todo-delete { color: var(--error); }
 .todo-delete:hover { background: var(--error-bg); }
 
 /* Modal */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: var(--z-modal); padding: var(--space-4); }
-.modal { width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; padding: var(--space-8); }
-.modal h2 { margin-bottom: var(--space-6); }
+.modal-overlay { position: fixed; inset: 0; background: oklch(18% 0.035 82 / 0.45); display: flex; align-items: center; justify-content: center; z-index: var(--z-modal); padding: var(--space-4); }
+.modal { width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; padding: var(--space-8); background: var(--paper); border: 1px solid var(--line); box-shadow: var(--shadow-xl); }
+.modal h2 { font-family: var(--font-display); font-weight: var(--weight-light); text-transform: uppercase; margin-bottom: var(--space-6); }
 .modal-form { display: flex; flex-direction: column; gap: var(--space-4); }
 .modal-phases { display: flex; flex-direction: column; gap: var(--space-3); }
 .modal-phases-header { display: flex; align-items: center; justify-content: space-between; }

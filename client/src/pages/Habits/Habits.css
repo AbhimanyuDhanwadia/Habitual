@@ -1,33 +1,38 @@
+/* ============================================
+   Habits — Neo Mirai flat cards, warm palette
+   ============================================ */
+
 .habits-page { padding: var(--space-6); max-width: var(--content-max-width); margin: 0 auto; }
 .habits-header { margin-bottom: var(--space-6); }
-.habits-header h1 { font-size: var(--text-3xl); margin-bottom: var(--space-1); }
-.habits-subtitle { color: var(--text-tertiary); }
+.habits-header h1 { font-family: var(--font-display); font-size: clamp(1.55rem, 3vw, 2.65rem); font-weight: var(--weight-light); text-transform: uppercase; margin-bottom: var(--space-1); }
+.habits-subtitle { font-family: var(--font-serif); color: var(--ash); }
 .habits-loading { display: flex; justify-content: center; padding: var(--space-16); }
 .habits-empty { text-align: center; padding: var(--space-12); font-size: 2rem; }
-.habits-empty p { font-size: var(--text-base); color: var(--text-tertiary); margin-top: var(--space-3); }
+.habits-empty p { font-family: var(--font-serif); font-size: var(--text-base); color: var(--ash); margin-top: var(--space-3); }
 
-/* Tabs */
+/* Tabs — monospaced pills */
 .habits-tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-8); overflow-x: auto; padding-bottom: var(--space-2); }
-.habit-tab { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); background: var(--glass-bg); border: 1px solid var(--glass-border); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--text-tertiary); cursor: pointer; white-space: nowrap; transition: all var(--duration-normal) var(--ease-out); }
-.habit-tab:hover { color: var(--text-secondary); border-color: var(--glass-border-hover); }
-.habit-tab.active { background: var(--accent-gradient); border-color: transparent; color: #fff; }
+.habit-tab { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); background: transparent; border: 1px solid var(--line); font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ash); text-transform: uppercase; cursor: pointer; white-space: nowrap; transition: all var(--duration-normal) var(--ease-out); }
+.habit-tab:hover { color: var(--ink-soft); border-color: var(--gold); }
+.habit-tab.active { background: var(--gold); border-color: var(--gold); color: var(--rice); }
 .habit-tab-icon { font-size: 1rem; }
 
 /* Grid */
-.habits-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: var(--space-5); }
+.habits-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 0; border: 1px solid var(--line); }
 
 /* Card */
-.habit-card { overflow: hidden; transition: all var(--duration-normal) var(--ease-out); cursor: default; }
-.habit-card.expanded { background: var(--glass-bg-hover); }
+.habit-card { overflow: hidden; transition: all var(--duration-normal) var(--ease-out); cursor: default; background: var(--paper-soft); border-bottom: 1px solid var(--line); border-radius: 0; }
+.habit-card:hover { background: var(--paper-deep); box-shadow: none; border-color: var(--line); }
+.habit-card.expanded { background: var(--paper-deep); }
 .habit-card-main { padding: var(--space-6); cursor: pointer; }
 .habit-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3); }
 .habit-emoji { font-size: 2rem; }
 .habit-meta { display: flex; align-items: center; gap: var(--space-2); }
-.habit-category-tag { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: var(--weight-semibold); }
-.habit-difficulty { font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; }
-.habit-title { font-size: var(--text-lg); margin-bottom: var(--space-2); }
-.habit-desc { font-size: var(--text-sm); color: var(--text-secondary); line-height: var(--leading-relaxed); }
-.habit-expand-hint { font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-3); text-align: center; }
+.habit-category-tag { font-family: var(--font-mono); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ash); font-weight: var(--weight-semibold); }
+.habit-difficulty { font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; }
+.habit-title { font-family: var(--font-display); font-size: var(--text-lg); font-weight: var(--weight-medium); text-transform: uppercase; margin-bottom: var(--space-2); }
+.habit-desc { font-family: var(--font-serif); font-size: var(--text-sm); color: var(--ink-soft); line-height: var(--leading-relaxed); }
+.habit-expand-hint { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ash); margin-top: var(--space-3); text-align: center; text-transform: uppercase; }
 
 /* Category borders */
 .cat-fitness { border-left: 3px solid var(--cat-fitness); }
@@ -38,10 +43,10 @@
 .cat-learning { border-left: 3px solid var(--cat-learning); }
 
 /* Details */
-.habit-details { padding: 0 var(--space-6) var(--space-6); border-top: 1px solid var(--glass-border); }
+.habit-details { padding: 0 var(--space-6) var(--space-6); border-top: 1px solid var(--line); }
 .habit-section { margin-top: var(--space-5); }
-.habit-section h4 { font-size: var(--text-base); margin-bottom: var(--space-2); color: var(--text-primary); }
-.habit-section p { font-size: var(--text-sm); color: var(--text-secondary); line-height: var(--leading-relaxed); }
+.habit-section h4 { font-family: var(--font-mono); font-size: var(--text-sm); text-transform: uppercase; margin-bottom: var(--space-2); color: var(--ink); }
+.habit-section p { font-family: var(--font-serif); font-size: var(--text-sm); color: var(--ink-soft); line-height: var(--leading-relaxed); }
 .habit-action { margin-top: var(--space-5); display: flex; justify-content: center; }
 
 @media (max-width: 768px) {

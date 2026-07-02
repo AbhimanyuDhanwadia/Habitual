@@ -1,177 +1,198 @@
 /* ============================================
    HABITUAL — Design Token System
-   Dark-mode-first, glassmorphic, gamified UI
+   Neo Mirai–inspired: warm paper, retro-futurist
    ============================================ */
 
 :root {
-  /* ---- Color Palette ---- */
+  /* ---- Color Palette (Neo Mirai) ---- */
 
-  /* Background Layers (darkest to lightest) */
-  --bg-base: #07070d;
-  --bg-primary: #0a0a14;
-  --bg-secondary: #10101f;
-  --bg-elevated: #16162a;
-  --bg-surface: #1c1c35;
+  /* Background / Paper scale */
+  --paper:        oklch(94% 0.035 78);
+  --paper-soft:   oklch(91% 0.045 78);
+  --paper-deep:   oklch(84% 0.06  73);
+  --rice:         oklch(97% 0.02  82);
 
-  /* Glass Effects */
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-bg-hover: rgba(255, 255, 255, 0.06);
-  --glass-bg-active: rgba(255, 255, 255, 0.08);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-hover: rgba(255, 255, 255, 0.14);
-  --glass-blur: 20px;
+  /* Ink / Text scale */
+  --ink:          oklch(18% 0.035 82);
+  --ink-soft:     oklch(32% 0.045 80);
+  --ash:          oklch(54% 0.04  80);
 
-  /* Accent Gradient — Violet → Fuchsia */
-  --accent-start: #8b5cf6;
-  --accent-mid: #a855f7;
-  --accent-end: #d946ef;
-  --accent-gradient: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  --accent-gradient-hover: linear-gradient(135deg, #9d6ff8, #e058f1);
-  --accent-glow: rgba(139, 92, 246, 0.25);
-  --accent-glow-strong: rgba(139, 92, 246, 0.45);
+  /* Lines & Borders */
+  --line:         oklch(73% 0.055 77);
 
-  /* Text */
-  --text-primary: #f0f0f5;
-  --text-secondary: #9e9eb8;
-  --text-tertiary: #6b6b85;
-  --text-muted: #4a4a62;
-  --text-accent: #c084fc;
+  /* Accent: Gold */
+  --gold:         oklch(68% 0.145 74);
+  --gold-bright:  oklch(76% 0.165 80);
 
-  /* Status Colors */
-  --success: #34d399;
-  --success-bg: rgba(52, 211, 153, 0.12);
-  --success-border: rgba(52, 211, 153, 0.25);
+  /* Accent: Burnt Orange / Sun */
+  --sun:          oklch(64% 0.19  43);
+  --sun-deep:     oklch(52% 0.17  38);
 
-  --warning: #fbbf24;
-  --warning-bg: rgba(251, 191, 36, 0.12);
-  --warning-border: rgba(251, 191, 36, 0.25);
+  /* Dark panels */
+  --night:        oklch(17% 0.035 185);
+  --night-soft:   oklch(24% 0.04  170);
 
-  --error: #f87171;
-  --error-bg: rgba(248, 113, 113, 0.12);
-  --error-border: rgba(248, 113, 113, 0.25);
+  /* Focus ring */
+  --focus:        oklch(58% 0.18 42);
 
-  --info: #60a5fa;
-  --info-bg: rgba(96, 165, 250, 0.12);
-  --info-border: rgba(96, 165, 250, 0.25);
+  /* ---- Semantic aliases (for component compatibility) ---- */
+  --bg-base:      var(--paper);
+  --bg-primary:   var(--paper);
+  --bg-secondary: var(--paper-soft);
+  --bg-elevated:  var(--paper-soft);
+  --bg-surface:   var(--paper-deep);
 
-  /* Coin/Reward Colors */
-  --coin-gold: #f59e0b;
-  --coin-glow: rgba(245, 158, 11, 0.35);
-  --streak-fire: #ef4444;
-  --streak-glow: rgba(239, 68, 68, 0.3);
+  --glass-bg:          var(--paper-soft);
+  --glass-bg-hover:    var(--paper-deep);
+  --glass-bg-active:   var(--paper-deep);
+  --glass-border:      var(--line);
+  --glass-border-hover: oklch(58% 0.06 76 / 0.45);
+  --glass-blur:        0px; /* No blur in Neo Mirai */
 
-  /* Rarity Colors */
-  --rarity-common: #9ca3af;
-  --rarity-rare: #3b82f6;
-  --rarity-epic: #a855f7;
-  --rarity-legendary: #f59e0b;
+  --accent-start:     var(--gold);
+  --accent-mid:       var(--gold-bright);
+  --accent-end:       var(--sun);
+  --accent-gradient:  var(--gold);
+  --accent-glow:      oklch(68% 0.145 74 / 0.25);
+  --accent-glow-strong: oklch(68% 0.145 74 / 0.45);
 
-  /* Category Colors (for Habits) */
-  --cat-fitness: #f97316;
-  --cat-mindfulness: #8b5cf6;
-  --cat-nutrition: #22c55e;
-  --cat-sleep: #6366f1;
-  --cat-social: #ec4899;
-  --cat-learning: #06b6d4;
+  --text-primary:   var(--ink);
+  --text-secondary: var(--ink-soft);
+  --text-tertiary:  var(--ash);
+  --text-muted:     oklch(66% 0.04 78);
+  --text-accent:    var(--sun-deep);
+
+  /* Status Colors — warmed to match palette */
+  --success:        oklch(62% 0.17 155);
+  --success-bg:     oklch(62% 0.17 155 / 0.10);
+  --success-border: oklch(62% 0.17 155 / 0.25);
+
+  --warning:        var(--gold-bright);
+  --warning-bg:     oklch(76% 0.165 80 / 0.12);
+  --warning-border: oklch(76% 0.165 80 / 0.25);
+
+  --error:          oklch(55% 0.22 28);
+  --error-bg:       oklch(55% 0.22 28 / 0.10);
+  --error-border:   oklch(55% 0.22 28 / 0.25);
+
+  --info:           oklch(58% 0.12 250);
+  --info-bg:        oklch(58% 0.12 250 / 0.10);
+  --info-border:    oklch(58% 0.12 250 / 0.25);
+
+
+
+  /* Category Colors — warm palette */
+  --cat-fitness:     var(--sun);
+  --cat-mindfulness: oklch(58% 0.12 290);
+  --cat-nutrition:   oklch(62% 0.17 155);
+  --cat-sleep:       oklch(48% 0.12 270);
+  --cat-social:      oklch(62% 0.16 20);
+  --cat-learning:    oklch(56% 0.12 220);
 
   /* Priority Colors */
-  --priority-low: #6b7280;
-  --priority-medium: #3b82f6;
-  --priority-high: #f59e0b;
-  --priority-critical: #ef4444;
+  --priority-low:      var(--ash);
+  --priority-medium:   var(--gold);
+  --priority-high:     var(--sun);
+  --priority-critical: oklch(55% 0.22 28);
 
 
   /* ---- Typography ---- */
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-heading: 'Outfit', var(--font-body);
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-display: "Chakra Petch", "Noto Sans JP", sans-serif;
+  --font-body:    "Zen Old Mincho", "Hiragino Mincho ProN", Georgia, serif;
+  --font-heading: "Chakra Petch", "Noto Sans JP", sans-serif;
+  --font-serif:   "Zen Old Mincho", "Hiragino Mincho ProN", serif;
+  --font-mono:    "Azeret Mono", "SFMono-Regular", ui-monospace, monospace;
 
   /* Font Sizes */
-  --text-xs: 0.75rem;    /* 12px */
-  --text-sm: 0.8125rem;  /* 13px */
-  --text-base: 0.9375rem;/* 15px */
-  --text-md: 1rem;       /* 16px */
-  --text-lg: 1.125rem;   /* 18px */
-  --text-xl: 1.25rem;    /* 20px */
-  --text-2xl: 1.5rem;    /* 24px */
-  --text-3xl: 1.875rem;  /* 30px */
-  --text-4xl: 2.25rem;   /* 36px */
-  --text-5xl: 3rem;      /* 48px */
-  --text-6xl: 3.75rem;   /* 60px */
+  --text-xs:   0.68rem;
+  --text-sm:   0.78rem;
+  --text-base: 0.92rem;
+  --text-md:   1rem;
+  --text-lg:   1.1rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.95rem;
+  --text-4xl:  2.65rem;
+  --text-5xl:  3.45rem;
+  --text-6xl:  4.5rem;
 
   /* Font Weights */
-  --weight-normal: 400;
-  --weight-medium: 500;
+  --weight-light:    300;
+  --weight-normal:   400;
+  --weight-medium:   500;
   --weight-semibold: 600;
-  --weight-bold: 700;
+  --weight-bold:     700;
   --weight-extrabold: 800;
 
   /* Line Heights */
-  --leading-tight: 1.2;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.65;
+  --leading-tight:   1.1;
+  --leading-normal:  1.42;
+  --leading-relaxed: 1.55;
 
 
   /* ---- Spacing (4px base) ---- */
-  --space-1: 0.25rem;   /* 4px */
-  --space-2: 0.5rem;    /* 8px */
-  --space-3: 0.75rem;   /* 12px */
-  --space-4: 1rem;      /* 16px */
-  --space-5: 1.25rem;   /* 20px */
-  --space-6: 1.5rem;    /* 24px */
-  --space-8: 2rem;      /* 32px */
-  --space-10: 2.5rem;   /* 40px */
-  --space-12: 3rem;     /* 48px */
-  --space-16: 4rem;     /* 64px */
-  --space-20: 5rem;     /* 80px */
-  --space-24: 6rem;     /* 96px */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
 
 
-  /* ---- Border Radii ---- */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-2xl: 32px;
+  /* ---- Border Radii (Neo Mirai: sharp/minimal) ---- */
+  --radius-sm:   2px;
+  --radius-md:   4px;
+  --radius-lg:   6px;
+  --radius-xl:   8px;
+  --radius-2xl:  12px;
   --radius-full: 9999px;
 
 
-  /* ---- Shadows ---- */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.25);
-  --shadow-xl: 0 16px 50px rgba(0, 0, 0, 0.5), 0 8px 16px rgba(0, 0, 0, 0.3);
-  --shadow-glow: 0 0 20px var(--accent-glow), 0 0 60px rgba(139, 92, 246, 0.1);
-  --shadow-glow-strong: 0 0 30px var(--accent-glow-strong), 0 0 80px rgba(139, 92, 246, 0.15);
-  --shadow-coin: 0 0 15px var(--coin-glow), 0 0 40px rgba(245, 158, 11, 0.1);
+  /* ---- Shadows (warm) ---- */
+  --shadow-sm:  0 4px 12px oklch(24% 0.05 75 / 0.08);
+  --shadow-md:  0 8px 28px oklch(24% 0.05 75 / 0.12);
+  --shadow-lg:  0 16px 50px oklch(24% 0.05 75 / 0.16);
+  --shadow-xl:  0 28px 90px oklch(24% 0.05 75 / 0.22);
+  --shadow-glow: 0 18px 52px oklch(50% 0.15 50 / 0.25);
+  --shadow-glow-strong: 0 18px 52px oklch(50% 0.15 50 / 0.32);
+
 
 
   /* ---- Transitions ---- */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-quart:  cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-quint:  cubic-bezier(0.22, 1, 0.36, 1);
 
-  --duration-fast: 150ms;
+  --duration-fast:   150ms;
   --duration-normal: 250ms;
-  --duration-slow: 400ms;
-  --duration-slower: 600ms;
+  --duration-slow:   400ms;
+  --duration-slower:  600ms;
 
 
   /* ---- Layout ---- */
-  --header-height: 64px;
-  --sidebar-width: 260px;
+  --header-height:          74px;
+  --sidebar-width:          260px;
   --sidebar-width-collapsed: 72px;
-  --content-max-width: 1200px;
-  --card-min-height: 120px;
+  --content-max-width:      1200px;
+  --card-min-height:        120px;
+  --grid-size:              112px;
 
 
   /* ---- Z-Index Scale ---- */
-  --z-base: 0;
+  --z-base:     0;
   --z-elevated: 10;
-  --z-sticky: 100;
-  --z-overlay: 500;
-  --z-modal: 1000;
-  --z-toast: 1500;
-  --z-tooltip: 2000;
+  --z-sticky:   100;
+  --z-overlay:  500;
+  --z-modal:    1000;
+  --z-toast:    1500;
+  --z-tooltip:  2000;
 }

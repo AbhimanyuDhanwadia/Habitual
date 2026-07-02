@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { habitsAPI } from '../../services/api';
-import { useGame } from '../../contexts/GameContext';
 import './Habits.css';
 
 const categories = [
@@ -18,7 +17,12 @@ export default function Habits() {
   const [activeCategory, setActiveCategory] = useState('');
   const [expandedHabit, setExpandedHabit] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { addNotification } = useGame();
+  const [feedback, setFeedback] = useState(null);
+
+  const showFeedback = (message, type = 'success') => {
+    setFeedback({ message, type });
+    setTimeout(() => setFeedback(null), 3000);
+  };
 
   const fetchHabits = async (category) => {
     try {
@@ -37,11 +41,11 @@ export default function Habits() {
   const handleAdopt = async (habitId) => {
     try {
       const res = await habitsAPI.adopt(habitId);
-      addNotification({ type: 'success', message: res.data.message, subMessage: 'Check your Daily Tasks!' });
+      showFeedback(res.data.message);
       setHabits(habits.map(h => h._id === habitId ? { ...h, adopted: true } : h));
     } catch (err) {
       const msg = err.response?.data?.message || 'Error adopting habit';
-      addNotification({ type: 'error', message: msg });
+      showFeedback(msg, 'error');
     }
   };
 
@@ -49,7 +53,7 @@ export default function Habits() {
     try {
       await habitsAPI.unadopt(habitId);
       setHabits(habits.map(h => h._id === habitId ? { ...h, adopted: false } : h));
-      addNotification({ type: 'info', message: 'Habit removed from daily routine' });
+      showFeedback('Habit removed from daily routine');
     } catch (err) {
       console.error('Error unadopting:', err);
     }
@@ -63,6 +67,13 @@ export default function Habits() {
         <h1>Better Habits</h1>
         <p className="habits-subtitle">Discover science-backed habits and add them to your daily routine</p>
       </div>
+
+      {/* Inline Feedback */}
+      {feedback && (
+        <div className={`habits-feedback badge badge-${feedback.type === 'error' ? 'error' : 'success'}`} style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3) var(--space-5)' }}>
+          {feedback.message}
+        </div>
+      )}
 
       {/* Category Tabs */}
       <div className="habits-tabs animate-fade-in-up">

@@ -83,17 +83,10 @@ export default function Dashboard() {
       {/* Stats Row */}
       <div className="dash-stats stagger-children">
         <div className="dash-stat-card glass-card">
-          <div className="stat-icon stat-icon-streak">🔥</div>
+          <div className="stat-icon stat-icon-streak">📅</div>
           <div className="stat-info">
             <span className="stat-value">{user?.currentStreak || 0}</span>
-            <span className="stat-label">Day Streak</span>
-          </div>
-        </div>
-        <div className="dash-stat-card glass-card">
-          <div className="stat-icon stat-icon-coins">🪙</div>
-          <div className="stat-info">
-            <span className="stat-value">{user?.coins || 0}</span>
-            <span className="stat-label">Coins</span>
+            <span className="stat-label">Consecutive Days</span>
           </div>
         </div>
         <div className="dash-stat-card glass-card">
@@ -169,13 +162,13 @@ export default function Dashboard() {
           <div className="dash-card-content">
             {urgentTodos.length === 0 && todos.length === 0 ? (
               <div className="dash-empty">
-                <span className="dash-empty-icon">🎯</span>
+                <span className="dash-empty-icon">📋</span>
                 <p>No active to-dos</p>
                 <Link to="/todos" className="btn-secondary" style={{ marginTop: '8px' }}>Create To-Do</Link>
               </div>
             ) : urgentTodos.length === 0 ? (
               <div className="dash-empty">
-                <span className="dash-empty-icon">😌</span>
+                <span className="dash-empty-icon">✓</span>
                 <p>No urgent deadlines</p>
                 <small style={{ color: 'var(--text-tertiary)' }}>{todos.length} active to-dos</small>
               </div>

@@ -43,16 +43,10 @@ export default function Header({ onToggleSidebar }) {
       </div>
 
       <div className="header-right">
-        {/* Streak Badge */}
-        <div className="header-stat header-streak" title={`${user?.currentStreak || 0} day streak`}>
-          <span className="streak-fire">🔥</span>
-          <span className="streak-count">{user?.currentStreak || 0}</span>
-        </div>
-
-        {/* Coin Balance */}
-        <div className="header-stat header-coins" title={`${user?.coins || 0} coins`}>
-          <span className="coin-icon">🪙</span>
-          <span className="coin-count" id="coin-counter">{user?.coins || 0}</span>
+        {/* Consistency Badge */}
+        <div className="header-stat header-streak" title={`${user?.currentStreak || 0} consecutive days`}>
+          <span className="streak-icon">📅</span>
+          <span className="streak-count">{user?.currentStreak || 0}d</span>
         </div>
 
         {/* User Menu */}
