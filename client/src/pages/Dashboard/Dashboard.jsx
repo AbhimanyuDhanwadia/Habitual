@@ -122,7 +122,10 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="dash-task-list">
-                {tasks.slice(0, 6).map((task) => (
+                {[...tasks]
+                  .sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1))
+                  .slice(0, 6)
+                  .map((task) => (
                   <div key={task._id} className={`dash-task-item ${task.completed ? 'dash-task-done' : ''}`}>
                     <div className={`dash-task-check ${task.completed ? 'checked' : ''}`}>
                       {task.completed && '✓'}
