@@ -12,6 +12,8 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import DailyTasks from './pages/DailyTasks/DailyTasks';
 import TodoList from './pages/TodoList/TodoList';
 import Habits from './pages/Habits/Habits';
+import Streaks from './pages/Streaks/Streaks';
+import Friends from './pages/Friends/Friends';
 import Account from './pages/Account/Account';
 import './styles/global.css';
 
@@ -49,6 +51,8 @@ function AppLayout() {
           <Route path="/tasks" element={<ProtectedRoute><DailyTasks /></ProtectedRoute>} />
           <Route path="/todos" element={<ProtectedRoute><TodoList /></ProtectedRoute>} />
           <Route path="/habits" element={<ProtectedRoute><Habits /></ProtectedRoute>} />
+          <Route path="/streaks" element={<ProtectedRoute><Streaks /></ProtectedRoute>} />
+          <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
           <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
         </Routes>
       </main>

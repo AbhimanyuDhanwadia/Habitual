@@ -143,12 +143,17 @@ router.get('/history', async (req, res) => {
     tasks.forEach(task => {
       const dateKey = task.date.toISOString().split('T')[0];
       if (!dateMap[dateKey]) {
-        dateMap[dateKey] = { total: 0, completed: 0 };
+        dateMap[dateKey] = { total: 0, completed: 0, tasksList: [] };
       }
       dateMap[dateKey].total += 1;
       if (task.completed) {
         dateMap[dateKey].completed += 1;
       }
+      dateMap[dateKey].tasksList.push({
+        id: task._id,
+        title: task.title,
+        completed: task.completed
+      });
     });
 
     // Convert to array with completion rate
@@ -157,6 +162,7 @@ router.get('/history', async (req, res) => {
       total: counts.total,
       completed: counts.completed,
       rate: counts.total > 0 ? Math.round((counts.completed / counts.total) * 100) : 0,
+      tasksList: counts.tasksList
     }));
 
     res.json({ history, month, year });

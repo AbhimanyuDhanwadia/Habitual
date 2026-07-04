@@ -41,6 +41,10 @@
 .cat-sleep { border-left: 3px solid var(--cat-sleep); }
 .cat-social { border-left: 3px solid var(--cat-social); }
 .cat-learning { border-left: 3px solid var(--cat-learning); }
+.cat-grooming { border-left: 3px solid var(--cat-grooming); }
+.cat-health { border-left: 3px solid var(--cat-health); }
+.cat-productivity { border-left: 3px solid var(--cat-productivity); }
+.cat-better_life { border-left: 3px solid var(--cat-better_life); }
 
 /* Details */
 .habit-details { padding: 0 var(--space-6) var(--space-6); border-top: 1px solid var(--line); }

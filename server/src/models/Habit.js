@@ -9,7 +9,7 @@ const habitSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['fitness', 'mindfulness', 'nutrition', 'sleep', 'social', 'learning'],
+    enum: ['fitness', 'mindfulness', 'nutrition', 'sleep', 'social', 'learning', 'grooming', 'health', 'productivity', 'better_life'],
   },
   description: {
     type: String,

@@ -9,11 +9,20 @@ const api = axios.create({
   },
 });
 
+import { auth } from '../config/firebase';
+
 // Request interceptor — attach JWT token
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('habitual_token');
-    if (token) {
+  async (config) => {
+    // If it's a dummy session, we don't need a real Firebase token
+    const isDummy = localStorage.getItem('habitual_token') === 'dummy_token_12345';
+    if (isDummy) {
+      config.headers.Authorization = `Bearer dummy_token_12345`;
+      return config;
+    }
+
+    if (auth.currentUser) {
+      const token = await auth.currentUser.getIdToken();
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -90,8 +99,8 @@ api.interceptors.response.use(
     }
 
     if (error.response?.status === 401) {
-      localStorage.removeItem('habitual_token');
-      // Don't redirect if already on auth page
+      // With Firebase, session state is managed by Firebase Auth, so we don't necessarily need to clear anything manually here,
+      // but we can force a redirect.
       if (!window.location.pathname.includes('/auth')) {
         window.location.href = '/auth';
       }
@@ -102,8 +111,8 @@ api.interceptors.response.use(
 
 // ---- Auth API ----
 export const authAPI = {
+  // register and login are handled by Firebase SDK, but we still need register to create the MongoDB user
   register: (data) => api.post('/auth/register', data),
-  login: (data) => api.post('/auth/login', data),
   getMe: () => api.get('/auth/me'),
 };
 
@@ -139,6 +148,22 @@ export const userAPI = {
   updateAvatar: (avatar) => api.patch('/user/avatar', { avatar }),
   updateTheme: (theme) => api.patch('/user/theme', { theme }),
   getStats: () => api.get('/user/stats'),
+};
+
+// ---- Friends API ----
+export const friendsAPI = {
+  getAll: () => api.get('/friends'),
+  request: (username) => api.post('/friends/request', { username }),
+  accept: (friendId) => api.post('/friends/accept', { friendId }),
+  nudge: (friendId) => api.post('/friends/nudge', { friendId }),
+  getHistory: (id, month, year) => api.get(`/friends/${id}/history`, { params: { month, year } }),
+};
+
+// ---- Notifications API ----
+export const notificationsAPI = {
+  getAll: () => api.get('/notifications'),
+  markRead: (id) => api.patch(`/notifications/${id}/read`),
+  markAllRead: () => api.patch('/notifications/read-all'),
 };
 
 export default api;

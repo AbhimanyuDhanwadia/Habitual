@@ -1,0 +1,142 @@
+.calendar-heatmap-full {
+  background-color: #f2e7d5; /* warm beige background */
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.calendar-header-full {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.calendar-header-full h3 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #1a1a1a;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.calendar-grid-full {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+}
+
+.day-name-full {
+  text-align: center;
+  font-weight: 700;
+  color: #7a7a7a;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.calendar-cell-full {
+  aspect-ratio: 1; /* keeps it a square grid, or you can use min-height if tasks need more space */
+  min-height: 120px;
+  background-color: #faeee0; /* slightly colored, less intense than background */
+  border: 1px solid #e5cdb0;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-cell-full.empty {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.calendar-cell-full.today {
+  border: 2px solid #b87a0b;
+}
+
+/* Water level fill anchored to the bottom */
+.water-level-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(223, 158, 118, 0.4); /* low opacity dark orange */
+  transition: height 0.5s ease-out;
+  z-index: 1;
+}
+
+/* Layer above the fill for content */
+.cell-content-layer {
+  position: relative;
+  z-index: 2;
+  padding: 8px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.date-label {
+  align-self: flex-end;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #4a4a4a;
+  margin-bottom: 8px;
+  font-family: 'Inter', sans-serif;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #333;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 4px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'Inter', sans-serif;
+}
+
+.task-item.completed .task-title {
+  text-decoration: line-through;
+  color: #7a7a7a;
+}
+
+.task-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #df9e76;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+.task-item.completed .task-dot {
+  background-color: #b87a0b;
+}
+
+.task-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-more {
+  font-size: 0.75rem;
+  color: #b87a0b;
+  text-align: center;
+  font-weight: bold;
+  margin-top: 2px;
+  font-family: 'Inter', sans-serif;
+}

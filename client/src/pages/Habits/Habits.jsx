@@ -4,9 +4,13 @@ import './Habits.css';
 
 const categories = [
   { id: '', label: 'All', icon: '🌟' },
+  { id: 'grooming', label: 'Looksmaxxing', icon: '✨' },
+  { id: 'productivity', label: 'Productivity', icon: '⚡' },
+  { id: 'better_life', label: 'Better Life', icon: '📈' },
   { id: 'fitness', label: 'Fitness', icon: '💪' },
   { id: 'mindfulness', label: 'Mindfulness', icon: '🧠' },
   { id: 'nutrition', label: 'Nutrition', icon: '🥗' },
+  { id: 'health', label: 'Health', icon: '⚕️' },
   { id: 'sleep', label: 'Sleep', icon: '😴' },
   { id: 'social', label: 'Social', icon: '💬' },
   { id: 'learning', label: 'Learning', icon: '📚' },

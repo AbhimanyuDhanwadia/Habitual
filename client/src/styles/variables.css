@@ -88,6 +88,10 @@
   --cat-sleep:       oklch(48% 0.12 270);
   --cat-social:      oklch(62% 0.16 20);
   --cat-learning:    oklch(56% 0.12 220);
+  --cat-grooming:    oklch(75% 0.1 330);
+  --cat-health:      oklch(65% 0.15 145);
+  --cat-productivity: oklch(65% 0.15 65);
+  --cat-better_life: oklch(70% 0.12 90);
 
   /* Priority Colors */
   --priority-low:      var(--ash);

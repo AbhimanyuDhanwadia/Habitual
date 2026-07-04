@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import admin from '../config/firebase.js';
 import User from '../models/User.js';
 
 export const auth = async (req, res, next) => {
@@ -9,28 +9,41 @@ export const auth = async (req, res, next) => {
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Bypass for dummy token
+    if (token === 'dummy_token_12345') {
+      let user = await User.findOne({ firebaseUid: 'dummy_uid' });
+      if (!user) {
+        user = await User.create({
+          firebaseUid: 'dummy_uid',
+          email: 'dummy@example.com',
+          firstName: 'Dummy',
+          lastName: 'User',
+          username: 'dummy_user'
+        });
+      }
+      req.user = user;
+      return next();
+    }
 
-    const user = await User.findById(decoded.id);
+    // Verify Firebase ID token
+    const decodedToken = await admin.auth().verifyIdToken(token);
+
+    // Find the user in our database using the Firebase UID
+    const user = await User.findOne({ firebaseUid: decodedToken.uid });
+    
     if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+      return res.status(401).json({ message: 'User not found in local database' });
     }
 
     req.user = user;
     next();
   } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ message: 'Invalid token' });
-    }
-    if (error.name === 'TokenExpiredError') {
+    console.error('Auth middleware error:', error);
+    if (error.code === 'auth/id-token-expired') {
       return res.status(401).json({ message: 'Token expired' });
     }
-    return res.status(500).json({ message: 'Authentication error' });
+    return res.status(401).json({ message: 'Invalid or missing token' });
   }
 };
 
-export const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-  });
-};

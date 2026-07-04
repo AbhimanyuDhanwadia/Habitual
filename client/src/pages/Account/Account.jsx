@@ -89,7 +89,9 @@ export default function Account() {
                 <div className="account-info-row">
                   <span className="account-info-label">Member Since</span>
                   <span className="account-info-value">
-                    {new Date(user?.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    {user?.createdAt 
+                      ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                      : 'Unknown'}
                   </span>
                 </div>
                 <button className="btn-secondary" onClick={() => setEditing(true)} style={{ marginTop: 'var(--space-4)' }}>

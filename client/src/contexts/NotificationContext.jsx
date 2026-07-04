@@ -42,6 +42,7 @@ export function NotificationProvider({ children }) {
     <NotificationContext.Provider value={{
       ...state,
       addNotification,
+      showNotification: addNotification,
       removeNotification,
     }}>
       {children}
@@ -56,5 +57,8 @@ export const useNotifications = () => {
   }
   return context;
 };
+
+// Alias for components that import useNotification
+export const useNotification = useNotifications;
 
 export default NotificationContext;

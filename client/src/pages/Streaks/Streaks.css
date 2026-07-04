@@ -1,0 +1,52 @@
+.streaks-page {
+  padding: var(--space-6);
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+}
+
+.streaks-header {
+  margin-bottom: var(--space-6);
+}
+
+.streaks-header h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 3vw, 2.65rem);
+  font-weight: var(--weight-light);
+  text-transform: uppercase;
+  margin-bottom: var(--space-1);
+}
+
+.streaks-subtitle {
+  font-family: var(--font-serif);
+  color: var(--ash);
+}
+
+.streaks-content {
+  margin-top: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.calendar-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.calendar-controls .btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: var(--text-muted);
+}

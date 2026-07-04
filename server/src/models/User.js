@@ -9,15 +9,10 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true,
   },
-  password: {
+  firebaseUid: {
     type: String,
-    minlength: 6,
-    select: false, // Don't return password by default
-  },
-  googleId: {
-    type: String,
+    required: true,
     unique: true,
-    sparse: true, // Allow null for non-Google users
   },
   firstName: {
     type: String,
@@ -72,22 +67,19 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Habit',
   }],
+  friends: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
+  friendRequests: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
 }, {
   timestamps: true,
 });
 
-// Hash password before save
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password') || !this.password) return next();
-  const salt = await bcrypt.genSalt(12);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
 
-// Compare password method
-userSchema.methods.comparePassword = async function (candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
-};
 
 // Get public profile (without sensitive data)
 userSchema.methods.toPublicJSON = function () {
@@ -106,6 +98,8 @@ userSchema.methods.toPublicJSON = function () {
     ownedItems: this.ownedItems,
     activeTheme: this.activeTheme,
     adoptedHabits: this.adoptedHabits,
+    friends: this.friends,
+    friendRequests: this.friendRequests,
     createdAt: this.createdAt,
   };
 };

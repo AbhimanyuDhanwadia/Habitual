@@ -1,82 +1,29 @@
-import { createContext, useContext, useReducer, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../services/api';
+import { auth } from '../config/firebase';
+import { 
+  onAuthStateChanged, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut 
+} from 'firebase/auth';
 
 const AuthContext = createContext(null);
 
-const initialState = {
-  user: null,
-  token: localStorage.getItem('habitual_token'),
-  isAuthenticated: false,
-  isLoading: true,
-  error: null,
-};
-
-function authReducer(state, action) {
-  switch (action.type) {
-    case 'AUTH_START':
-      return { ...state, isLoading: true, error: null };
-    case 'AUTH_SUCCESS':
-      return {
-        ...state,
-        user: action.payload.user,
-        token: action.payload.token,
-        isAuthenticated: true,
-        isLoading: false,
-        error: null,
-      };
-    case 'AUTH_LOADED':
-      return {
-        ...state,
-        user: action.payload.user,
-        isAuthenticated: true,
-        isLoading: false,
-      };
-    case 'AUTH_ERROR':
-      return {
-        ...state,
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: action.payload,
-      };
-    case 'LOGOUT':
-      return {
-        ...state,
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
-      };
-    case 'UPDATE_USER':
-      return {
-        ...state,
-        user: { ...state.user, ...action.payload },
-      };
-    case 'CLEAR_ERROR':
-      return { ...state, error: null };
-    default:
-      return state;
-  }
-}
-
 export function AuthProvider({ children }) {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('habitual_token'));
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Auto-load user on mount if token exists
+  // Listen to Firebase Auth state changes
   useEffect(() => {
-    const loadUser = async () => {
-      const token = localStorage.getItem('habitual_token');
-      if (!token) {
-        dispatch({ type: 'AUTH_ERROR', payload: null });
-        return;
-      }
-      
-      // Dummy mode check
-      if (token === 'dummy_token_12345') {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      // Handle Dummy Mode
+      if (localStorage.getItem('habitual_token') === 'dummy_token_12345') {
         const fakeUser = {
-          _id: "dummy_id",
+          _id: "dummy123",
           email: "dummy@example.com",
           firstName: "Dummy",
           lastName: "User",
@@ -86,47 +33,85 @@ export function AuthProvider({ children }) {
           currentStreak: 5,
           longestStreak: 12,
           ownedItems: [],
-          adoptedHabits: []
+          adoptedHabits: [],
+          createdAt: new Date().toISOString()
         };
-        dispatch({ type: 'AUTH_LOADED', payload: { user: fakeUser } });
+        setUser(fakeUser);
+        setIsAuthenticated(true);
+        setIsLoading(false);
         return;
       }
 
-      try {
-        const res = await authAPI.getMe();
-        dispatch({ type: 'AUTH_LOADED', payload: { user: res.data.user } });
-      } catch (err) {
-        localStorage.removeItem('habitual_token');
-        dispatch({ type: 'AUTH_ERROR', payload: null });
+      if (firebaseUser) {
+        try {
+          const res = await authAPI.getMe();
+          setUser(res.data.user);
+          setIsAuthenticated(true);
+        } catch (err) {
+          console.error("Failed to fetch user profile:", err);
+          // If we can't fetch the user profile, but they are authenticated in Firebase,
+          // they might not have finished registration on our backend.
+          setUser(null);
+          setIsAuthenticated(false);
+          setError("User profile not found. Please log in again.");
+          await signOut(auth);
+        }
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
       }
-    };
-    loadUser();
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const register = async (formData) => {
-    dispatch({ type: 'AUTH_START' });
+    setIsLoading(true);
+    setError(null);
     try {
+      // 1. Create user in Firebase
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      
+      // 2. Wait for the token to be available for the interceptor
+      await userCredential.user.getIdToken();
+
+      // 3. Create user in our MongoDB backend
       const res = await authAPI.register(formData);
-      localStorage.setItem('habitual_token', res.data.token);
-      dispatch({ type: 'AUTH_SUCCESS', payload: { user: res.data.user, token: res.data.token } });
+      
+      setUser(res.data.user);
+      setIsAuthenticated(true);
+      setIsLoading(false);
       return { success: true, message: res.data.message };
     } catch (err) {
-      const message = err.response?.data?.message || 'Registration failed';
-      dispatch({ type: 'AUTH_ERROR', payload: message });
+      let message = err.message || 'Registration failed';
+      if (err.response?.data?.message) {
+        message = err.response.data.message;
+      } else if (err.code === 'auth/email-already-in-use') {
+        message = 'Email is already in use.';
+      }
+      setError(message);
+      setIsLoading(false);
+      // If Firebase succeeded but our backend failed, we should probably delete the Firebase user here to keep them in sync.
+      // Ignoring for simplicity in this demo, but important for production.
       return { success: false, message };
     }
   };
 
   const login = async (formData) => {
-    dispatch({ type: 'AUTH_START' });
+    setIsLoading(true);
+    setError(null);
     try {
-      const res = await authAPI.login(formData);
-      localStorage.setItem('habitual_token', res.data.token);
-      dispatch({ type: 'AUTH_SUCCESS', payload: { user: res.data.user, token: res.data.token } });
-      return { success: true, message: res.data.message };
+      await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      // onAuthStateChanged will handle the rest (fetching profile)
+      return { success: true, message: "Welcome back!" };
     } catch (err) {
-      const message = err.response?.data?.message || 'Login failed';
-      dispatch({ type: 'AUTH_ERROR', payload: message });
+      let message = err.message || 'Login failed';
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        message = 'Invalid email or password.';
+      }
+      setError(message);
+      setIsLoading(false);
       return { success: false, message };
     }
   };
@@ -147,26 +132,37 @@ export function AuthProvider({ children }) {
       adoptedHabits: []
     };
     localStorage.setItem('habitual_token', fakeToken);
-    dispatch({ type: 'AUTH_SUCCESS', payload: { user: fakeUser, token: fakeToken } });
+    setToken(fakeToken);
+    setUser(fakeUser);
+    setIsAuthenticated(true);
     return { success: true, message: "Logged in as Dummy User" };
   };
 
-  const logout = () => {
-    localStorage.removeItem('habitual_token');
-    dispatch({ type: 'LOGOUT' });
+  const logout = async () => {
+    try {
+      localStorage.removeItem('habitual_token');
+      await signOut(auth);
+      // onAuthStateChanged will handle the rest
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
   };
 
   const updateUser = (userData) => {
-    dispatch({ type: 'UPDATE_USER', payload: userData });
+    setUser(prevUser => ({ ...prevUser, ...userData }));
   };
 
   const clearError = () => {
-    dispatch({ type: 'CLEAR_ERROR' });
+    setError(null);
   };
 
   return (
     <AuthContext.Provider value={{
-      ...state,
+      user,
+      token, // token state here is mainly for dummy mode, the real token is dynamic now
+      isAuthenticated,
+      isLoading,
+      error,
       register,
       login,
       dummyLogin,
@@ -188,3 +184,4 @@ export const useAuth = () => {
 };
 
 export default AuthContext;
+

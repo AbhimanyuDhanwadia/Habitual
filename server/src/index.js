@@ -10,6 +10,8 @@ import todoRoutes from './routes/todos.js';
 import habitRoutes from './routes/habits.js';
 import shopRoutes from './routes/shop.js';
 import userRoutes from './routes/user.js';
+import friendRoutes from './routes/friends.js';
+import notificationRoutes from './routes/notifications.js';
 
 dotenv.config();
 
@@ -35,6 +37,8 @@ app.use('/api/todos', todoRoutes);
 app.use('/api/habits', habitRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/friends', friendRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // 404 handler
 app.use((req, res) => {

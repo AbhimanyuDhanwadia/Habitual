@@ -178,8 +178,8 @@ export default function Dashboard() {
             ) : (
               <div className="dash-todo-list">
                 {urgentTodos.map((todo) => {
-                  const deadline = new Date(todo.deadline);
-                  const daysLeft = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                  const deadline = todo.deadline ? new Date(todo.deadline) : null;
+                  const daysLeft = deadline ? Math.ceil((deadline - now) / (1000 * 60 * 60 * 24)) : null;
                   const completedPhases = todo.phases.filter(p => p.completed).length;
                   return (
                     <div key={todo._id} className="dash-todo-item">
@@ -188,9 +188,11 @@ export default function Dashboard() {
                         <span className="dash-todo-title">{todo.title}</span>
                       </div>
                       <div className="dash-todo-meta">
-                        <span className={`dash-todo-deadline ${daysLeft <= 1 ? 'deadline-urgent' : ''}`}>
-                          {daysLeft <= 0 ? '⚠️ Overdue' : daysLeft === 1 ? '⏰ Tomorrow' : `${daysLeft} days left`}
-                        </span>
+                        {daysLeft !== null && (
+                          <span className={`dash-todo-deadline ${daysLeft <= 1 ? 'deadline-urgent' : ''}`}>
+                            {daysLeft <= 0 ? '⚠️ Overdue' : daysLeft === 1 ? '⏰ Tomorrow' : `${daysLeft} days left`}
+                          </span>
+                        )}
                         {todo.phases.length > 0 && (
                           <span className="dash-todo-phases">
                             {completedPhases}/{todo.phases.length} phases

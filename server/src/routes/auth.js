@@ -1,8 +1,8 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User.js';
-import { generateToken } from '../middleware/auth.js';
 import { auth } from '../middleware/auth.js';
+import admin from '../config/firebase.js';
 import { awardSignupBonus } from '../services/rewardService.js';
 
 const router = express.Router();
@@ -18,9 +18,9 @@ const validate = (req, res) => {
 };
 
 // POST /api/auth/register
+// Expects an Authorization header with a valid Firebase ID token
 router.post('/register', [
   body('email').isEmail().withMessage('Valid email is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('firstName').trim().notEmpty().withMessage('First name is required'),
   body('lastName').trim().notEmpty().withMessage('Last name is required'),
   body('username').trim().isLength({ min: 3, max: 24 }).withMessage('Username must be 3-24 characters'),
@@ -28,7 +28,22 @@ router.post('/register', [
   try {
     if (!validate(req, res)) return;
 
-    const { email, password, firstName, lastName, username, dob, avatar } = req.body;
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    let decodedToken;
+    try {
+      decodedToken = await admin.auth().verifyIdToken(token);
+    } catch (error) {
+      console.error('Firebase token verification error during registration:', error);
+      return res.status(401).json({ message: 'Invalid or missing Firebase token' });
+    }
+
+    const { email, firstName, lastName, username, dob, avatar } = req.body;
+    const firebaseUid = decodedToken.uid;
 
     // Check existing user
     const existingEmail = await User.findOne({ email });
@@ -41,9 +56,14 @@ router.post('/register', [
       return res.status(400).json({ message: 'Username already taken' });
     }
 
+    const existingFirebaseUser = await User.findOne({ firebaseUid });
+    if (existingFirebaseUser) {
+      return res.status(400).json({ message: 'User already exists for this Firebase identity' });
+    }
+
     const user = await User.create({
       email,
-      password,
+      firebaseUid,
       firstName,
       lastName,
       username,
@@ -57,53 +77,13 @@ router.post('/register', [
     // Refresh user data to include bonus
     const updatedUser = await User.findById(user._id);
 
-    const token = generateToken(user._id);
-
     res.status(201).json({
       message: 'Account created successfully!',
-      token,
       user: updatedUser.toPublicJSON(),
     });
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ message: 'Server error during registration' });
-  }
-});
-
-// POST /api/auth/login
-router.post('/login', [
-  body('email').isEmail().withMessage('Valid email is required'),
-  body('password').notEmpty().withMessage('Password is required'),
-], async (req, res) => {
-  try {
-    if (!validate(req, res)) return;
-
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email }).select('+password');
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    if (!user.password) {
-      return res.status(401).json({ message: 'This account uses Google sign-in' });
-    }
-
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    const token = generateToken(user._id);
-
-    res.json({
-      message: 'Welcome back!',
-      token,
-      user: user.toPublicJSON(),
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error during login' });
   }
 });
 

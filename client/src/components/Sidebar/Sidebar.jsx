@@ -47,6 +47,28 @@ const navItems = [
       </svg>
     ),
   },
+  {
+    path: '/streaks',
+    label: 'Streaks',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2c0 0-5 7-5 11a5 5 0 0010 0c0-4-5-11-5-11z" />
+        <path d="M12 22a5 5 0 005-5c0-2.5-2-4.5-5-6-3 1.5-5 3.5-5 6a5 5 0 005 5z" fill="currentColor" opacity="0.3" />
+      </svg>
+    ),
+  },
+  {
+    path: '/friends',
+    label: 'Friends',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 00-3-3.87" />
+        <path d="M16 3.13a4 4 0 010 7.75" />
+      </svg>
+    ),
+  },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
