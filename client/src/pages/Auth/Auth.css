@@ -162,6 +162,44 @@
   justify-content: center;
 }
 
+/* Divider */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: var(--space-4) 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--line);
+}
+
+.auth-divider span {
+  padding: 0 var(--space-3);
+  color: var(--ash);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+/* Google Button */
+.google-btn {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-medium);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.google-btn:hover {
+  background: var(--paper-deep);
+  border-color: var(--gold);
+}
+
 /* Avatar Grid */
 .avatar-grid {
   display: grid;

@@ -87,6 +87,71 @@ router.post('/register', [
   }
 });
 
+// POST /api/auth/google
+// Handles Google Sign-In. Expects Firebase ID token in Authorization header.
+router.post('/google', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    let decodedToken;
+    try {
+      decodedToken = await admin.auth().verifyIdToken(token);
+    } catch (error) {
+      console.error('Firebase token verification error during Google login:', error);
+      return res.status(401).json({ message: 'Invalid or missing Firebase token' });
+    }
+
+    const firebaseUid = decodedToken.uid;
+    const email = decodedToken.email;
+    const name = decodedToken.name || '';
+    const picture = decodedToken.picture;
+
+    // Check existing user
+    let user = await User.findOne({ firebaseUid });
+
+    if (!user) {
+      // Create user
+      const nameParts = name.split(' ');
+      const firstName = nameParts[0] || 'Google';
+      const lastName = nameParts.slice(1).join(' ') || 'User';
+      
+      // Generate a username from email or name
+      const baseUsername = email ? email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') : firstName.toLowerCase();
+      let username = baseUsername;
+      let counter = 1;
+      while (await User.findOne({ username })) {
+        username = `${baseUsername}${counter}`;
+        counter++;
+      }
+
+      user = await User.create({
+        email,
+        firebaseUid,
+        firstName,
+        lastName,
+        username,
+        avatar: picture || 'default-1', // Or use google picture url directly if frontend supports external urls
+      });
+
+      await awardSignupBonus(user._id);
+      user = await User.findById(user._id);
+    }
+
+    res.status(200).json({
+      message: 'Google login successful!',
+      user: user.toPublicJSON(),
+    });
+
+  } catch (error) {
+    console.error('Google login error:', error);
+    res.status(500).json({ message: 'Server error during Google login' });
+  }
+});
+
 // GET /api/auth/me
 router.get('/me', auth, async (req, res) => {
   try {

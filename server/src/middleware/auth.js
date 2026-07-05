@@ -10,21 +10,6 @@ export const auth = async (req, res, next) => {
 
     const token = authHeader.split(' ')[1];
     
-    // Bypass for dummy token
-    if (token === 'dummy_token_12345') {
-      let user = await User.findOne({ firebaseUid: 'dummy_uid' });
-      if (!user) {
-        user = await User.create({
-          firebaseUid: 'dummy_uid',
-          email: 'dummy@example.com',
-          firstName: 'Dummy',
-          lastName: 'User',
-          username: 'dummy_user'
-        });
-      }
-      req.user = user;
-      return next();
-    }
 
     // Verify Firebase ID token
     const decodedToken = await admin.auth().verifyIdToken(token);

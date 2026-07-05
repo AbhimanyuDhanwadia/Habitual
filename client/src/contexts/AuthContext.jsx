@@ -5,6 +5,8 @@ import {
   onAuthStateChanged, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
+  signInWithPopup,
+  GoogleAuthProvider,
   signOut 
 } from 'firebase/auth';
 
@@ -20,35 +22,6 @@ export function AuthProvider({ children }) {
   // Listen to Firebase Auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      // Handle Dummy Mode
-      if (localStorage.getItem('habitual_token') === 'dummy_token_12345') {
-        const storedUser = localStorage.getItem('dummy_user');
-        let fakeUser;
-        if (storedUser) {
-          fakeUser = JSON.parse(storedUser);
-        } else {
-          fakeUser = {
-            _id: "dummy123",
-            email: "dummy@example.com",
-            firstName: "Dummy",
-            lastName: "User",
-            username: "dummyuser",
-            avatar: "default-1",
-            activeTheme: "default",
-            coins: 1000,
-            currentStreak: 5,
-            longestStreak: 12,
-            ownedItems: [],
-            adoptedHabits: [],
-            createdAt: new Date().toISOString()
-          };
-          localStorage.setItem('dummy_user', JSON.stringify(fakeUser));
-        }
-        setUser(fakeUser);
-        setIsAuthenticated(true);
-        setIsLoading(false);
-        return;
-      }
 
       if (firebaseUser) {
         try {
@@ -65,6 +38,17 @@ export function AuthProvider({ children }) {
           await signOut(auth);
         }
       } else {
+        const localToken = localStorage.getItem('habitual_token');
+        if (localToken === 'dummy_token_12345') {
+          const dummyUserStr = localStorage.getItem('dummy_user');
+          if (dummyUserStr) {
+            setUser(JSON.parse(dummyUserStr));
+            setToken(localToken);
+            setIsAuthenticated(true);
+            setIsLoading(false);
+            return;
+          }
+        }
         setUser(null);
         setIsAuthenticated(false);
       }
@@ -110,6 +94,32 @@ export function AuthProvider({ children }) {
     setIsLoading(true);
     setError(null);
     try {
+      // DUMMY MODE
+      if (formData.email === 'dummy@example.com' && formData.password === 'password') {
+        const fakeToken = 'dummy_token_12345';
+        const fakeUser = {
+          _id: 'dummy_user_123',
+          firstName: 'Dummy',
+          lastName: 'User',
+          email: 'dummy@example.com',
+          username: 'dummy',
+          avatar: 'default-1',
+          coins: 100,
+          currentStreak: 1,
+          longestStreak: 1,
+          activeTheme: 'neo-mirai',
+          unlockedThemes: ['neo-mirai']
+        };
+        
+        localStorage.setItem('habitual_token', fakeToken);
+        localStorage.setItem('dummy_user', JSON.stringify(fakeUser));
+        setToken(fakeToken);
+        setUser(fakeUser);
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        return { success: true, message: "Welcome back (Dummy Mode)!" };
+      }
+
       await signInWithEmailAndPassword(auth, formData.email, formData.password);
       // onAuthStateChanged will handle the rest (fetching profile)
       return { success: true, message: "Welcome back!" };
@@ -124,28 +134,28 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const dummyLogin = () => {
-    const fakeToken = "dummy_token_12345";
-    const fakeUser = {
-      _id: "dummy_id",
-      email: "dummy@example.com",
-      firstName: "Dummy",
-      lastName: "User",
-      username: "dummyuser",
-      avatar: "default-1",
-      activeTheme: "default",
-      coins: 1000,
-      currentStreak: 5,
-      longestStreak: 12,
-      ownedItems: [],
-      adoptedHabits: []
-    };
-    localStorage.setItem('habitual_token', fakeToken);
-    localStorage.setItem('dummy_user', JSON.stringify(fakeUser));
-    setToken(fakeToken);
-    setUser(fakeUser);
-    setIsAuthenticated(true);
-    return { success: true, message: "Logged in as Dummy User" };
+  const googleLogin = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      await userCredential.user.getIdToken();
+      const res = await authAPI.googleLogin();
+      setUser(res.data.user);
+      setIsAuthenticated(true);
+      setIsLoading(false);
+      return { success: true, message: res.data.message || "Welcome back!" };
+    } catch (err) {
+      console.error(err);
+      let message = err.message || 'Google Login failed';
+      if (err.response?.data?.message) {
+        message = err.response.data.message;
+      }
+      setError(message);
+      setIsLoading(false);
+      return { success: false, message };
+    }
   };
 
   const logout = async () => {
@@ -162,9 +172,6 @@ export function AuthProvider({ children }) {
   const updateUser = (userData) => {
     setUser(prevUser => {
       const newUser = { ...prevUser, ...userData };
-      if (localStorage.getItem('habitual_token') === 'dummy_token_12345') {
-        localStorage.setItem('dummy_user', JSON.stringify(newUser));
-      }
       return newUser;
     });
   };
@@ -182,7 +189,7 @@ export function AuthProvider({ children }) {
       error,
       register,
       login,
-      dummyLogin,
+      googleLogin,
       logout,
       updateUser,
       clearError,
