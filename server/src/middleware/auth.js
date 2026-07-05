@@ -1,4 +1,5 @@
 import admin from '../config/firebase.js';
+import { getAuth } from 'firebase-admin/auth';
 import User from '../models/User.js';
 
 export const auth = async (req, res, next) => {
@@ -12,7 +13,7 @@ export const auth = async (req, res, next) => {
     
 
     // Verify Firebase ID token
-    const decodedToken = await admin.auth().verifyIdToken(token);
+    const decodedToken = await getAuth().verifyIdToken(token);
 
     // Find the user in our database using the Firebase UID
     const user = await User.findOne({ firebaseUid: decodedToken.uid });

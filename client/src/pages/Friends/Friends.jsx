@@ -152,7 +152,13 @@ export default function Friends() {
                 <div key={friend._id} className="friend-card card">
                   <div className="friend-header">
                     <div className="friend-profile">
-                      <div className={`avatar avatar-md ${friend.avatar || 'default-1'}`}></div>
+                      {friend.avatar?.startsWith('http') || friend.avatar?.startsWith('data:image') ? (
+                        <div className="avatar avatar-md" style={{ padding: 0, overflow: 'hidden' }}>
+                          <img src={friend.avatar} alt="Avatar" referrerPolicy="no-referrer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      ) : (
+                        <div className={`avatar avatar-md ${friend.avatar || 'default-1'}`}></div>
+                      )}
                       <div className="friend-details">
                         <h3>{friend.firstName} {friend.lastName}</h3>
                         <span className="friend-username">@{friend.username}</span>

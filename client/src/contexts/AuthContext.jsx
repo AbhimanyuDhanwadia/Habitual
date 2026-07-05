@@ -21,7 +21,10 @@ export function AuthProvider({ children }) {
 
   // Listen to Firebase Auth state changes
   useEffect(() => {
+    let signingOut = false; // Prevent re-entrant loop when signOut triggers onAuthStateChanged again
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (signingOut) return; // Already handling sign-out, skip
 
       if (firebaseUser) {
         try {
@@ -30,12 +33,17 @@ export function AuthProvider({ children }) {
           setIsAuthenticated(true);
         } catch (err) {
           console.error("Failed to fetch user profile:", err);
-          // If we can't fetch the user profile, but they are authenticated in Firebase,
-          // they might not have finished registration on our backend.
+          // User exists in Firebase but not in our MongoDB — sign them out
+          // to avoid an infinite loop.
           setUser(null);
           setIsAuthenticated(false);
-          setError("User profile not found. Please log in again.");
-          await signOut(auth);
+          signingOut = true;
+          try {
+            await signOut(auth);
+          } catch (signOutErr) {
+            console.error("Sign out error:", signOutErr);
+          }
+          signingOut = false;
         }
       } else {
         const localToken = localStorage.getItem('habitual_token');
@@ -66,10 +74,10 @@ export function AuthProvider({ children }) {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       
       // 2. Wait for the token to be available for the interceptor
-      await userCredential.user.getIdToken();
+      const token = await userCredential.user.getIdToken();
 
       // 3. Create user in our MongoDB backend
-      const res = await authAPI.register(formData);
+      const res = await authAPI.register(formData, token);
       
       setUser(res.data.user);
       setIsAuthenticated(true);
@@ -140,8 +148,8 @@ export function AuthProvider({ children }) {
     try {
       const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
-      await userCredential.user.getIdToken();
-      const res = await authAPI.googleLogin();
+      const token = await userCredential.user.getIdToken();
+      const res = await authAPI.googleLogin(token);
       setUser(res.data.user);
       setIsAuthenticated(true);
       setIsLoading(false);

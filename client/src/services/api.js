@@ -26,13 +26,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // With Firebase, session state is managed by Firebase Auth, so we don't necessarily need to clear anything manually here,
-      // but we can force a redirect.
-      if (!window.location.pathname.includes('/auth')) {
-        window.location.href = '/auth';
-      }
-    }
+    // Don't force-redirect on 401 — let the AuthContext handle auth state.
+    // A hard window.location.href redirect restarts Firebase auth listeners
+    // and causes an infinite redirect loop between /auth and /dashboard.
     return Promise.reject(error);
   }
 );
@@ -40,8 +36,8 @@ api.interceptors.response.use(
 // ---- Auth API ----
 export const authAPI = {
   // register and login are handled by Firebase SDK, but we still need register to create the MongoDB user
-  register: (data) => api.post('/auth/register', data),
-  googleLogin: () => api.post('/auth/google'),
+  register: (data, token) => api.post('/auth/register', data, token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
+  googleLogin: (token) => api.post('/auth/google', {}, token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
   getMe: () => api.get('/auth/me'),
 };
 

@@ -3,6 +3,7 @@ import { body, validationResult } from 'express-validator';
 import User from '../models/User.js';
 import { auth } from '../middleware/auth.js';
 import admin from '../config/firebase.js';
+import { getAuth } from 'firebase-admin/auth';
 import { awardSignupBonus } from '../services/rewardService.js';
 
 const router = express.Router();
@@ -36,7 +37,7 @@ router.post('/register', [
     const token = authHeader.split(' ')[1];
     let decodedToken;
     try {
-      decodedToken = await admin.auth().verifyIdToken(token);
+      decodedToken = await getAuth().verifyIdToken(token);
     } catch (error) {
       console.error('Firebase token verification error during registration:', error);
       return res.status(401).json({ message: 'Invalid or missing Firebase token' });
@@ -99,7 +100,7 @@ router.post('/google', async (req, res) => {
     const token = authHeader.split(' ')[1];
     let decodedToken;
     try {
-      decodedToken = await admin.auth().verifyIdToken(token);
+      decodedToken = await getAuth().verifyIdToken(token);
     } catch (error) {
       console.error('Firebase token verification error during Google login:', error);
       return res.status(401).json({ message: 'Invalid or missing Firebase token' });
@@ -120,7 +121,10 @@ router.post('/google', async (req, res) => {
       const lastName = nameParts.slice(1).join(' ') || 'User';
       
       // Generate a username from email or name
-      const baseUsername = email ? email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') : firstName.toLowerCase();
+      let baseUsername = email ? email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') : firstName.toLowerCase();
+      if (baseUsername.length < 3) {
+        baseUsername = baseUsername.padEnd(3, '0');
+      }
       let username = baseUsername;
       let counter = 1;
       while (await User.findOne({ username })) {

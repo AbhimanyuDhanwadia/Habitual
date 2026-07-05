@@ -242,14 +242,33 @@ export default function Dashboard() {
                     else intensity = 'cal-none';
                   }
 
+                  const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                  const dayTodos = todos.filter(todo => todo.deadline && todo.deadline.split('T')[0] === dateStr);
+
                   return (
-                    <span
+                    <div
                       key={day}
                       className={`mini-cal-cell ${isToday ? 'mini-cal-today' : ''} ${intensity}`}
                       title={history ? `${history.completed}/${history.total} tasks (${rate}%)` : ''}
+                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
                     >
-                      {day}
-                    </span>
+                      <span style={{ alignSelf: 'flex-end', marginBottom: '4px' }}>{day}</span>
+                      {dayTodos.map(t => (
+                        <div key={t._id} style={{ 
+                          fontSize: '0.65rem', 
+                          background: 'var(--paper)', 
+                          padding: '2px 4px', 
+                          borderRadius: '2px', 
+                          marginTop: '2px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          width: '100%'
+                        }}>
+                          {t.title}
+                        </div>
+                      ))}
+                    </div>
                   );
                 })}
               </div>

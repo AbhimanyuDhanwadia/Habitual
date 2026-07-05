@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { userAPI } from '../../services/api';
+import ImageCropper from '../../components/ImageCropper/ImageCropper';
 import './Account.css';
 
 const AVATAR_OPTIONS = ['default-1', '🦁', '🦊', '🦉', '🦄', '🐼', '🐸', '🐙', '👾'];
@@ -24,10 +25,37 @@ export default function Account() {
   });
 
   const [saving, setSaving] = useState(false);
+  const [pendingAvatar, setPendingAvatar] = useState(user?.avatar);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+
+  useEffect(() => {
+    setPendingAvatar(user?.avatar);
+  }, [user?.avatar]);
 
   const showFeedback = (message, type = 'success') => {
     setFeedback({ message, type });
     setTimeout(() => setFeedback(null), 3000);
+  };
+
+  const fileInputRef = useRef(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      showFeedback('Image must be under 2MB', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setCropImageSrc(reader.result);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''; // Reset input
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveProfile = async () => {
@@ -44,13 +72,21 @@ export default function Account() {
     }
   };
 
-  const handleUpdateAvatar = async (avatar) => {
+  const handleSelectAvatar = (avatar) => {
+    setPendingAvatar(avatar);
+  };
+
+  const handleSaveAvatar = async () => {
+    if (pendingAvatar === user?.avatar) return;
+    setSaving(true);
     try {
-      const res = await userAPI.updateAvatar(avatar);
+      const res = await userAPI.updateAvatar(pendingAvatar);
       updateUser(res.data.user);
       showFeedback('Avatar updated');
     } catch (err) {
       showFeedback('Error updating avatar', 'error');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -67,6 +103,9 @@ export default function Account() {
   const renderAvatar = () => {
     if (!user?.avatar || user.avatar === 'default-1') {
       return `${user?.firstName?.charAt(0) || ''}${user?.lastName?.charAt(0) || ''}`;
+    }
+    if (user.avatar.startsWith('http') || user.avatar.startsWith('data:image')) {
+      return <img src={user.avatar} alt="Avatar" referrerPolicy="no-referrer" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />;
     }
     return user.avatar;
   };
@@ -160,16 +199,38 @@ export default function Account() {
               <div className="preference-group">
                 <h3>Avatar Selection</h3>
                 <div className="avatar-selection-grid">
+                  <button 
+                    className={`avatar-option ${pendingAvatar?.startsWith('data:image') ? 'active' : ''}`}
+                    onClick={() => fileInputRef.current?.click()}
+                    title="Upload Custom Image (Max 2MB)"
+                    style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}
+                  >
+                    +
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/png, image/jpeg, image/gif, image/webp"
+                    style={{ display: 'none' }}
+                  />
                   {AVATAR_OPTIONS.map(opt => (
                     <button 
                       key={opt}
-                      className={`avatar-option ${user?.avatar === opt || (!user?.avatar && opt === 'default-1') ? 'active' : ''}`}
-                      onClick={() => handleUpdateAvatar(opt)}
+                      className={`avatar-option ${pendingAvatar === opt || (!pendingAvatar && opt === 'default-1') ? 'active' : ''}`}
+                      onClick={() => handleSelectAvatar(opt)}
                     >
                       {opt === 'default-1' ? `${user?.firstName?.charAt(0) || ''}${user?.lastName?.charAt(0) || ''}` : opt}
                     </button>
                   ))}
                 </div>
+                {pendingAvatar !== user?.avatar && (
+                  <div style={{ marginTop: 'var(--space-4)', display: 'flex', justifyContent: 'flex-end' }}>
+                    <button className="btn-primary" onClick={handleSaveAvatar} disabled={saving}>
+                      {saving ? 'Saving...' : 'Save Avatar Changes'}
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="preference-group" style={{ marginTop: 'var(--space-6)' }}>
@@ -213,6 +274,18 @@ export default function Account() {
           </div>
         </div>
       </div>
+      {cropImageSrc && (
+        <ImageCropper
+          imageSrc={cropImageSrc}
+          onCropComplete={(croppedImage) => {
+            setPendingAvatar(croppedImage);
+            setCropImageSrc(null);
+          }}
+          onCancel={() => {
+            setCropImageSrc(null);
+          }}
+        />
+      )}
     </div>
   );
 }

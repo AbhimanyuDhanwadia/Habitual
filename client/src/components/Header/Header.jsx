@@ -30,6 +30,9 @@ export default function Header({ onToggleSidebar }) {
     if (!user?.avatar || user.avatar === 'default-1') {
       return `${user?.firstName?.charAt(0) || ''}${user?.lastName?.charAt(0) || ''}`;
     }
+    if (user.avatar.startsWith('http') || user.avatar.startsWith('data:image')) {
+      return <img src={user.avatar} alt="Avatar" referrerPolicy="no-referrer" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />;
+    }
     return user.avatar;
   };
 
