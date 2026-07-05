@@ -6,12 +6,12 @@ import { getAuth } from 'firebase/auth';
 // 2. Add a Web App if you haven't already
 // 3. Copy the configuration object below
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAplkV1GetR-6PKACpOsBwfY7LlWLFwVto",
+  authDomain: "habitual-web-2026.firebaseapp.com",
+  projectId: "habitual-web-2026",
+  storageBucket: "habitual-web-2026.firebasestorage.app",
+  messagingSenderId: "823701056529",
+  appId: "1:823701056529:web:f1e2fa030804e7700895b0"
 };
 
 // Initialize Firebase

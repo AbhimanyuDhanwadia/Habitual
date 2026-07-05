@@ -42,10 +42,10 @@ export default function Landing() {
     <div className="landing">
       {/* Navigation */}
       <nav className="landing-nav">
-        <div className="landing-nav-logo">
+        <Link to="/" className="landing-nav-logo" style={{ textDecoration: 'none' }}>
           <span className="landing-nav-icon">⚡</span>
           <span className="landing-nav-text">Habitual</span>
-        </div>
+        </Link>
         <div className="landing-nav-actions">
           {isAuthenticated ? (
             <Link to="/dashboard" className="btn-primary">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import './Auth.css';
 
@@ -104,10 +104,10 @@ export default function Auth() {
 
       <div className="auth-container animate-scale-in">
         {/* Logo */}
-        <div className="auth-logo">
+        <Link to="/" className="auth-logo" style={{ textDecoration: 'none' }}>
           <span className="auth-logo-icon">⚡</span>
           <span className="auth-logo-text">Habitual</span>
-        </div>
+        </Link>
 
         {/* Step indicator for signup */}
         {isSignup && (

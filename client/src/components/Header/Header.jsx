@@ -43,7 +43,7 @@ export default function Header({ onToggleSidebar }) {
             <line x1="3" y1="18" x2="21" y2="18" />
           </svg>
         </button>
-        <Link to="/dashboard" className="header-logo">
+        <Link to="/" className="header-logo">
           <span className="header-logo-icon">⚡</span>
           <span className="header-logo-text">Habitual</span>
         </Link>
