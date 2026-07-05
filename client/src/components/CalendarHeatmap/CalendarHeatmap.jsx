@@ -6,7 +6,7 @@ const MONTH_NAMES = [
   'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
 ];
 
-export default function CalendarHeatmap({ year, month, historyData }) {
+export default function CalendarHeatmap({ year, month, historyData, todos = [], hideHeader = false, onPrevMonth, onToday, onNextMonth }) {
   // month is 1-indexed (1-12)
   const firstDay = new Date(year, month - 1, 1).getDay();
   const daysInMonth = new Date(year, month, 0).getDate();
@@ -35,7 +35,6 @@ export default function CalendarHeatmap({ year, month, historyData }) {
         const day = parseInt(dateParts[2], 10);
         dataMap[day] = {
           rate: item.rate, // 0-100
-          tasks: item.tasksList || []
         };
       }
     });
@@ -47,9 +46,18 @@ export default function CalendarHeatmap({ year, month, historyData }) {
 
   return (
     <div className="calendar-heatmap-full fade-in">
-      <div className="calendar-header-full">
-        <h3>{MONTH_NAMES[month - 1]} {year}</h3>
-      </div>
+      {!hideHeader && (
+        <div className="calendar-header-full" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ width: '100px', display: 'flex', justifyContent: 'flex-start' }}>
+            {onPrevMonth && <button className="btn-ghost" onClick={onPrevMonth} style={{ fontSize: '1.2rem', padding: '0.25rem 0.75rem' }}>←</button>}
+          </div>
+          <h3 style={{ margin: 0, flex: 1, textAlign: 'center' }}>{MONTH_NAMES[month - 1]} {year}</h3>
+          <div style={{ width: '100px', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+            {onToday && <button className="btn-ghost" onClick={onToday} style={{ fontSize: '0.9rem', padding: '0.25rem 0.5rem' }}>TODAY</button>}
+            {onNextMonth && <button className="btn-ghost" onClick={onNextMonth} style={{ fontSize: '1.2rem', padding: '0.25rem 0.75rem' }}>→</button>}
+          </div>
+        </div>
+      )}
       
       <div className="calendar-grid-full">
         <div className="day-name-full">SUN</div>
@@ -65,14 +73,17 @@ export default function CalendarHeatmap({ year, month, historyData }) {
             return <div key={`empty-${index}`} className="calendar-cell-full empty"></div>;
           }
 
-          const dayData = dataMap[day] || { rate: 0, tasks: [] };
+          const dayData = dataMap[day] || { rate: 0 };
           const isToday = isCurrentMonth && day === currentDay;
-          const { rate, tasks } = dayData;
+          const { rate } = dayData;
+          
+          const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const dayTodos = todos.filter(todo => todo.deadline && todo.deadline.split('T')[0] === dateStr);
 
           // truncate logic: show 3 items, then "+X more"
           const MAX_VISIBLE = 3;
-          const visibleTasks = tasks.slice(0, MAX_VISIBLE);
-          const hiddenCount = tasks.length - MAX_VISIBLE;
+          const visibleTasks = dayTodos.slice(0, MAX_VISIBLE);
+          const hiddenCount = dayTodos.length - MAX_VISIBLE;
 
           return (
             <div key={`day-${day}`} className={`calendar-cell-full ${isToday ? 'today' : ''}`}>
@@ -85,7 +96,6 @@ export default function CalendarHeatmap({ year, month, historyData }) {
                 <div className="task-list">
                   {visibleTasks.map((t, idx) => (
                     <div key={idx} className={`task-item ${t.completed ? 'completed' : ''}`}>
-                      <span className="task-dot"></span>
                       <span className="task-title">{t.title}</span>
                     </div>
                   ))}

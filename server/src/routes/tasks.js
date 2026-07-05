@@ -4,6 +4,9 @@ import DailyTask from '../models/DailyTask.js';
 import { auth } from '../middleware/auth.js';
 import { awardTaskCompletion, awardDailyCompletion, updateStreak } from '../services/rewardService.js';
 
+import User from '../models/User.js';
+import Habit from '../models/Habit.js';
+
 const router = express.Router();
 
 // All routes require authentication
@@ -18,10 +21,35 @@ router.get('/', async (req, res) => {
     const endOfDay = new Date(startOfDay);
     endOfDay.setDate(endOfDay.getDate() + 1);
 
-    const tasks = await DailyTask.find({
+    let tasks = await DailyTask.find({
       userId: req.user._id,
       date: { $gte: startOfDay, $lt: endOfDay },
     }).sort({ order: 1, createdAt: 1 });
+
+    // Auto-generate missing habit tasks for this date
+    const user = await User.findById(req.user._id).populate('adoptedHabits');
+    if (user && user.adoptedHabits && user.adoptedHabits.length > 0) {
+      const existingHabitIds = tasks.filter(t => t.isHabitGenerated).map(t => t.habitId?.toString());
+      
+      const newTasksToCreate = [];
+      for (const habit of user.adoptedHabits) {
+        if (!existingHabitIds.includes(habit._id.toString())) {
+          newTasksToCreate.push({
+            userId: req.user._id,
+            title: `${habit.icon} ${habit.title}`,
+            date: startOfDay,
+            isHabitGenerated: true,
+            habitId: habit._id,
+            order: tasks.length + newTasksToCreate.length,
+          });
+        }
+      }
+
+      if (newTasksToCreate.length > 0) {
+        const createdTasks = await DailyTask.insertMany(newTasksToCreate);
+        tasks = [...tasks, ...createdTasks];
+      }
+    }
 
     res.json({ tasks });
   } catch (error) {

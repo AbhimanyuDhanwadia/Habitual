@@ -22,20 +22,28 @@ export function AuthProvider({ children }) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       // Handle Dummy Mode
       if (localStorage.getItem('habitual_token') === 'dummy_token_12345') {
-        const fakeUser = {
-          _id: "dummy123",
-          email: "dummy@example.com",
-          firstName: "Dummy",
-          lastName: "User",
-          username: "dummyuser",
-          avatar: "default-1",
-          coins: 1000,
-          currentStreak: 5,
-          longestStreak: 12,
-          ownedItems: [],
-          adoptedHabits: [],
-          createdAt: new Date().toISOString()
-        };
+        const storedUser = localStorage.getItem('dummy_user');
+        let fakeUser;
+        if (storedUser) {
+          fakeUser = JSON.parse(storedUser);
+        } else {
+          fakeUser = {
+            _id: "dummy123",
+            email: "dummy@example.com",
+            firstName: "Dummy",
+            lastName: "User",
+            username: "dummyuser",
+            avatar: "default-1",
+            activeTheme: "default",
+            coins: 1000,
+            currentStreak: 5,
+            longestStreak: 12,
+            ownedItems: [],
+            adoptedHabits: [],
+            createdAt: new Date().toISOString()
+          };
+          localStorage.setItem('dummy_user', JSON.stringify(fakeUser));
+        }
         setUser(fakeUser);
         setIsAuthenticated(true);
         setIsLoading(false);
@@ -125,6 +133,7 @@ export function AuthProvider({ children }) {
       lastName: "User",
       username: "dummyuser",
       avatar: "default-1",
+      activeTheme: "default",
       coins: 1000,
       currentStreak: 5,
       longestStreak: 12,
@@ -132,6 +141,7 @@ export function AuthProvider({ children }) {
       adoptedHabits: []
     };
     localStorage.setItem('habitual_token', fakeToken);
+    localStorage.setItem('dummy_user', JSON.stringify(fakeUser));
     setToken(fakeToken);
     setUser(fakeUser);
     setIsAuthenticated(true);
@@ -141,6 +151,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       localStorage.removeItem('habitual_token');
+      localStorage.removeItem('dummy_user');
       await signOut(auth);
       // onAuthStateChanged will handle the rest
     } catch (err) {
@@ -149,7 +160,13 @@ export function AuthProvider({ children }) {
   };
 
   const updateUser = (userData) => {
-    setUser(prevUser => ({ ...prevUser, ...userData }));
+    setUser(prevUser => {
+      const newUser = { ...prevUser, ...userData };
+      if (localStorage.getItem('habitual_token') === 'dummy_token_12345') {
+        localStorage.setItem('dummy_user', JSON.stringify(newUser));
+      }
+      return newUser;
+    });
   };
 
   const clearError = () => {
@@ -184,4 +201,5 @@ export const useAuth = () => {
 };
 
 export default AuthContext;
+
 

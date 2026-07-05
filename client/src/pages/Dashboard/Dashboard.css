@@ -380,7 +380,7 @@
 }
 
 .cal-none {
-  background: oklch(55% 0.22 28 / 0.06);
+  background: transparent;
 }
 
 /* Responsive */

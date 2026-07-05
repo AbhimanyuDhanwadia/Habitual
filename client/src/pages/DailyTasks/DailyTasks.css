@@ -267,7 +267,7 @@
   box-shadow: 0 0 4px oklch(68% 0.145 74 / 0.25);
 }
 
-.heat-0 { background: oklch(55% 0.22 28 / 0.06); }
+.heat-0 { background: transparent; }
 .heat-1 { background: oklch(68% 0.145 74 / 0.10); }
 .heat-2 { background: oklch(68% 0.145 74 / 0.22); }
 .heat-3 { background: oklch(68% 0.145 74 / 0.35); color: var(--ink); }

@@ -26,6 +26,13 @@ export default function Header({ onToggleSidebar }) {
     setMenuOpen(false);
   };
 
+  const renderAvatar = () => {
+    if (!user?.avatar || user.avatar === 'default-1') {
+      return `${user?.firstName?.charAt(0) || ''}${user?.lastName?.charAt(0) || ''}`;
+    }
+    return user.avatar;
+  };
+
   return (
     <header className="header">
       <div className="header-left">
@@ -65,7 +72,7 @@ export default function Header({ onToggleSidebar }) {
             aria-expanded={menuOpen}
           >
             <div className="header-avatar">
-              {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+              {renderAvatar()}
             </div>
           </button>
 
@@ -73,7 +80,7 @@ export default function Header({ onToggleSidebar }) {
             <div className="header-dropdown">
               <div className="dropdown-user-info">
                 <div className="dropdown-avatar">
-                  {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+                  {renderAvatar()}
                 </div>
                 <div>
                   <p className="dropdown-name">{user?.firstName} {user?.lastName}</p>

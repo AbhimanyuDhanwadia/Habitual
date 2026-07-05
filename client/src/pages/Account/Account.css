@@ -7,6 +7,12 @@
 .account-header h1 { font-family: var(--font-display); font-size: clamp(1.55rem, 3vw, 2.65rem); font-weight: var(--weight-light); text-transform: uppercase; margin-bottom: var(--space-1); }
 .account-subtitle { font-family: var(--font-serif); color: var(--ash); }
 
+.account-tabs { display: flex; gap: var(--space-6); margin-bottom: var(--space-6); border-bottom: 1px solid var(--line); padding-bottom: var(--space-2); }
+.account-tab { background: none; border: none; font-family: var(--font-mono); font-size: var(--text-sm); text-transform: uppercase; color: var(--ash); cursor: pointer; padding: var(--space-2) 0; position: relative; transition: color 0.2s; }
+.account-tab:hover { color: var(--ink); }
+.account-tab.active { color: var(--ink); font-weight: var(--weight-bold); }
+.account-tab.active::after { content: ''; position: absolute; bottom: calc(var(--space-2) * -1 - 1px); left: 0; right: 0; height: 2px; background: var(--gold); }
+
 .account-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--line); }
 
 .account-card { padding: var(--space-8); background: var(--paper-soft); border-radius: 0; }
@@ -26,6 +32,20 @@
 
 .account-edit-form { display: flex; flex-direction: column; gap: var(--space-4); }
 .account-edit-actions { display: flex; gap: var(--space-3); justify-content: flex-end; margin-top: var(--space-2); }
+
+/* Preferences */
+.preference-group h3 { font-family: var(--font-mono); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-transform: uppercase; margin-bottom: var(--space-4); color: var(--ink); }
+.avatar-selection-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: var(--space-3); }
+.avatar-option { width: 60px; height: 60px; border-radius: var(--radius-full); background: var(--paper); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: var(--text-2xl); cursor: pointer; transition: all 0.2s; font-family: var(--font-mono); color: var(--ink); font-weight: var(--weight-bold); }
+.avatar-option:hover { border-color: var(--gold); transform: scale(1.05); }
+.avatar-option.active { border-color: var(--gold); background: var(--gold); color: var(--rice); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3); }
+
+.theme-selection-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.theme-option { display: flex; justify-content: space-between; align-items: center; padding: var(--space-3) var(--space-4); background: var(--paper); border: 1px solid var(--line); border-radius: 0; cursor: pointer; text-align: left; transition: all 0.2s; }
+.theme-option:hover { border-color: var(--gold); }
+.theme-option.active { border-color: var(--gold); background: var(--rice); }
+.theme-option-name { font-family: var(--font-serif); font-size: var(--text-md); color: var(--ink); }
+.theme-option-check { color: var(--gold); font-weight: bold; }
 
 /* Stats */
 .account-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--line); }

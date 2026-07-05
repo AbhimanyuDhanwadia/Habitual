@@ -30,6 +30,17 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Simple in-memory store for Dummy Mode to persist state during the session
+const dummyStore = {
+  tasks: [],
+  todos: [],
+  habits: [
+    { _id: 'h1', title: 'Drink Water', icon: '💧', category: 'health', adopted: false },
+    { _id: 'h2', title: 'Read 10 Pages', icon: '📚', category: 'mind', adopted: false },
+    { _id: 'h3', title: 'Meditate', icon: '🧘', category: 'mind', adopted: true } // one adopted for testing
+  ],
+};
+
 // Response interceptor — handle auth errors
 api.interceptors.response.use(
   (response) => response,
@@ -39,59 +50,132 @@ api.interceptors.response.use(
     if (token === 'dummy_token_12345') {
       console.log('Dummy mode: Ignored 401 error from backend');
       
-      // Provide mock responses for dummy mode so UI doesn't crash
       const method = error.config?.method?.toLowerCase();
       const url = error.config?.url || '';
 
       if (url.includes('/tasks')) {
         if (method === 'post') {
           const payload = error.config.data ? JSON.parse(error.config.data) : {};
-          return Promise.resolve({
-            data: {
-              task: {
-                _id: 'dummy_' + Date.now(),
-                title: payload.title || 'Dummy Task',
-                date: payload.date || new Date().toISOString(),
-                completed: false,
-                isHabitGenerated: false
-              }
-            }
-          });
+          const newTask = {
+            _id: 'dummy_' + Date.now(),
+            title: payload.title || 'Dummy Task',
+            date: payload.date || new Date().toISOString(),
+            completed: false,
+            isHabitGenerated: payload.isHabitGenerated || false,
+            habitId: payload.habitId || undefined
+          };
+          dummyStore.tasks.push(newTask);
+          return Promise.resolve({ data: { task: newTask } });
         }
+        
         if (method === 'get' && url.includes('history')) return Promise.resolve({ data: { history: [] } });
-        if (method === 'get') return Promise.resolve({ data: { tasks: [] } });
+        
+        if (method === 'get') {
+          // Parse date from URL params: e.g. /tasks?date=2026-07-04
+          const match = url.match(/date=([^&]+)/);
+          const reqDateStr = match ? match[1].split('T')[0] : new Date().toISOString().split('T')[0];
+          
+          let dayTasks = dummyStore.tasks.filter(t => t.date.startsWith(reqDateStr));
+          
+          // Auto-spawn missing habits (like the backend fix)
+          const adoptedHabits = dummyStore.habits.filter(h => h.adopted);
+          const existingHabitIds = dayTasks.filter(t => t.isHabitGenerated).map(t => t.habitId);
+          
+          let newHabitTasks = [];
+          for (const habit of adoptedHabits) {
+            if (!existingHabitIds.includes(habit._id)) {
+              const hTask = {
+                _id: 'dummy_' + Date.now() + Math.random(),
+                title: `${habit.icon} ${habit.title}`,
+                date: reqDateStr + 'T12:00:00.000Z',
+                completed: false,
+                isHabitGenerated: true,
+                habitId: habit._id
+              };
+              dummyStore.tasks.push(hTask);
+              newHabitTasks.push(hTask);
+            }
+          }
+          
+          dayTasks = [...dayTasks, ...newHabitTasks];
+          return Promise.resolve({ data: { tasks: dayTasks } });
+        }
+        
         if (method === 'patch') {
+           const id = url.split('/').slice(-2, -1)[0];
+           const task = dummyStore.tasks.find(t => t._id === id);
+           if (task) task.completed = !task.completed;
+           
            return Promise.resolve({ 
              data: { 
-               task: { _id: url.split('/').slice(-2, -1)[0] || 'dummy', completed: true },
+               task: task || { _id: id || 'dummy', completed: true },
                reward: { coins: 10 },
                streakUpdate: { currentStreak: 1, longestStreak: 1 }
              } 
            });
         }
-        if (method === 'delete') return Promise.resolve({ data: { success: true } });
+        if (method === 'delete') {
+           const id = url.split('/').pop();
+           dummyStore.tasks = dummyStore.tasks.filter(t => t._id !== id);
+           return Promise.resolve({ data: { success: true } });
+        }
       }
 
       if (url.includes('/todos')) {
-        if (method === 'get') return Promise.resolve({ data: { todos: [] } });
-        if (method === 'post' || method === 'patch') {
-          return Promise.resolve({
-            data: {
-              todo: { _id: 'dummy_todo_' + Date.now(), title: 'Dummy Todo', currentPhase: 0, completed: false, phases: [] }
-            }
-          });
+        if (method === 'get') return Promise.resolve({ data: { todos: dummyStore.todos } });
+        if (method === 'post') {
+          const payload = error.config.data ? JSON.parse(error.config.data) : {};
+          const newTodo = { ...payload, _id: 'dummy_todo_' + Date.now(), currentPhase: 0, completed: false, phases: payload.phases || [] };
+          dummyStore.todos.push(newTodo);
+          return Promise.resolve({ data: { todo: newTodo } });
         }
-        if (method === 'delete') return Promise.resolve({ data: { success: true } });
+        if (method === 'patch') {
+           const id = url.split('/').pop() || url.split('/').slice(-3, -2)[0]; // naive parsing
+           const todo = dummyStore.todos.find(t => t._id === id);
+           if (todo) {
+             const payload = error.config.data ? JSON.parse(error.config.data) : {};
+             Object.assign(todo, payload);
+           }
+           return Promise.resolve({ data: { todo: todo || {} } });
+        }
+        if (method === 'delete') {
+           const id = url.split('/').pop();
+           dummyStore.todos = dummyStore.todos.filter(t => t._id !== id);
+           return Promise.resolve({ data: { success: true } });
+        }
       }
 
       if (url.includes('/habits')) {
-        if (method === 'get') return Promise.resolve({ data: { habits: [] } });
-        if (method === 'post') return Promise.resolve({ data: { message: 'Action completed in dummy mode' } });
+        if (method === 'get') return Promise.resolve({ data: { habits: dummyStore.habits } });
+        if (method === 'post' && url.includes('adopt')) {
+           const id = url.split('/').slice(-2, -1)[0];
+           const habit = dummyStore.habits.find(h => h._id === id);
+           if (habit) habit.adopted = true;
+           return Promise.resolve({ data: { message: 'Habit adopted in dummy mode', habit } });
+        }
+        if (method === 'post' && url.includes('unadopt')) {
+           const id = url.split('/').slice(-2, -1)[0];
+           const habit = dummyStore.habits.find(h => h._id === id);
+           if (habit) habit.adopted = false;
+           return Promise.resolve({ data: { message: 'Habit removed in dummy mode' } });
+        }
       }
 
       if (url.includes('/user')) {
         if (method === 'get') return Promise.resolve({ data: { stats: {} } });
-        if (method === 'patch') return Promise.resolve({ data: { user: { coins: 100, currentStreak: 1, longestStreak: 1 } } });
+        if (method === 'patch') {
+          const payload = error.config.data ? JSON.parse(error.config.data) : {};
+          if (url.includes('/avatar')) {
+            return Promise.resolve({ data: { user: { avatar: payload.avatar } } });
+          }
+          if (url.includes('/theme')) {
+            return Promise.resolve({ data: { user: { activeTheme: payload.theme } } });
+          }
+          if (url.includes('/profile')) {
+            return Promise.resolve({ data: { user: payload } });
+          }
+          return Promise.resolve({ data: { user: { coins: 100, currentStreak: 1, longestStreak: 1 } } });
+        }
       }
 
       // Default fake response or reject

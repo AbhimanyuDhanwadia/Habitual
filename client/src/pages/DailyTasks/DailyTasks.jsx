@@ -1,13 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { tasksAPI } from '../../services/api';
+import { tasksAPI, todosAPI } from '../../services/api';
 import './DailyTasks.css';
 
 export default function DailyTasks() {
+  const navigate = useNavigate();
   const { user, updateUser } = useAuth();
   const [tasks, setTasks] = useState([]);
+  const [todos, setTodos] = useState([]);
   const [newTask, setNewTask] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [calendarMonthDate, setCalendarMonthDate] = useState(new Date());
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const inputRef = useRef(null);
@@ -23,22 +27,30 @@ export default function DailyTasks() {
 
   const fetchHistory = async () => {
     try {
-      const now = new Date();
-      const res = await tasksAPI.getHistory(now.getMonth() + 1, now.getFullYear());
+      const res = await tasksAPI.getHistory(calendarMonthDate.getMonth() + 1, calendarMonthDate.getFullYear());
       setHistory(res.data.history || []);
     } catch (err) {
       console.error('Error fetching history:', err);
     }
   };
 
+  const fetchTodos = async () => {
+    try {
+      const res = await todosAPI.getAll();
+      setTodos(res.data.todos || []);
+    } catch (err) {
+      console.error('Error fetching todos:', err);
+    }
+  };
+
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      await Promise.all([fetchTasks(selectedDate), fetchHistory()]);
+      await Promise.all([fetchTasks(selectedDate), fetchHistory(), fetchTodos()]);
       setLoading(false);
     };
     init();
-  }, [selectedDate]);
+  }, [selectedDate, calendarMonthDate]);
 
   const handleAddTask = async (e) => {
     e.preventDefault();
@@ -93,18 +105,23 @@ export default function DailyTasks() {
     setSelectedDate(d.toISOString().split('T')[0]);
   };
 
+  const navigateMonth = (offset) => {
+    const d = new Date(calendarMonthDate);
+    d.setMonth(d.getMonth() + offset);
+    setCalendarMonthDate(d);
+  };
+
   const isToday = selectedDate === new Date().toISOString().split('T')[0];
   const completed = tasks.filter(t => t.completed).length;
   const total = tasks.length;
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-  // Calendar heatmap data
-  const now = new Date();
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+  // Calendar heatmap data based on calendarMonthDate
+  const daysInMonth = new Date(calendarMonthDate.getFullYear(), calendarMonthDate.getMonth() + 1, 0).getDate();
+  const firstDay = new Date(calendarMonthDate.getFullYear(), calendarMonthDate.getMonth(), 1).getDay();
 
   const getHistoryForDay = (day) => {
-    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dateStr = `${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     return history.find(h => h.date === dateStr);
   };
 
@@ -165,6 +182,32 @@ export default function DailyTasks() {
           </div>
         )}
 
+        {/* Deadlines Section */}
+        {todos.filter(todo => todo.deadline && todo.deadline.split('T')[0] === selectedDate).length > 0 && (
+          <div className="deadlines-section animate-fade-in-up" style={{ marginBottom: 'var(--space-5)' }}>
+            <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', color: 'var(--sun-deep)', textTransform: 'uppercase', marginBottom: 'var(--space-3)' }}>
+              ⚠️ Deadlines Today
+            </h3>
+            <div className="task-list stagger-children">
+              {todos.filter(todo => todo.deadline && todo.deadline.split('T')[0] === selectedDate).map(todo => (
+                <div 
+                  key={todo._id} 
+                  className={`task-item glass-card ${todo.completed ? 'task-completed' : ''}`}
+                  onClick={() => navigate('/todos')}
+                  style={{ cursor: 'pointer' }}
+                  title="Click to view To-Do details"
+                >
+                  <div className="task-checkbox" style={{ visibility: 'hidden' }}></div>
+                  <span className={`task-title ${todo.completed ? 'task-title-done' : ''}`} style={{ fontWeight: 'var(--weight-semibold)' }}>
+                    {todo.title}
+                  </span>
+                  <span className="badge badge-warning">Project Deadline</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Task List */}
         <div className="task-list stagger-children">
           {loading ? (
@@ -216,9 +259,13 @@ export default function DailyTasks() {
       {/* Sidebar: Calendar Heatmap */}
       <aside className="tasks-sidebar">
         <div className="heatmap-card glass-card animate-fade-in-up">
-          <h3 className="heatmap-title">
-            {now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-          </h3>
+          <div className="heatmap-title-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <button className="btn-ghost" onClick={() => navigateMonth(-1)} style={{ padding: '0.25rem 0.5rem' }}>←</button>
+            <h3 className="heatmap-title" style={{ margin: 0, fontSize: '1rem', flex: 1, textAlign: 'center' }}>
+              {calendarMonthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </h3>
+            <button className="btn-ghost" onClick={() => navigateMonth(1)} style={{ padding: '0.25rem 0.5rem' }}>→</button>
+          </div>
           <div className="heatmap">
             <div className="heatmap-header">
               {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
@@ -231,9 +278,14 @@ export default function DailyTasks() {
               ))}
               {Array.from({ length: daysInMonth }, (_, i) => {
                 const day = i + 1;
-                const dayDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayDate = `${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const isSelected = dayDate === selectedDate;
-                const isCurrentDay = day === now.getDate();
+                
+                const realNow = new Date();
+                const isCurrentDay = day === realNow.getDate() && 
+                                     calendarMonthDate.getMonth() === realNow.getMonth() && 
+                                     calendarMonthDate.getFullYear() === realNow.getFullYear();
+                                     
                 const h = getHistoryForDay(day);
                 const rate = h?.rate || 0;
 
