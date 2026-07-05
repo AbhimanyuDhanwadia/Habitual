@@ -1,9 +1,19 @@
 import admin from 'firebase-admin';
 
 // Initialize Firebase Admin SDK
-// This relies on the GOOGLE_APPLICATION_CREDENTIALS environment variable
-// being set to the path of your service account key JSON file,
-// or being deployed to a GCP environment.
-admin.initializeApp();
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  try {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+  } catch (error) {
+    console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT env variable:', error);
+    admin.initializeApp(); // Fallback
+  }
+} else {
+  // Relies on GOOGLE_APPLICATION_CREDENTIALS pointing to a file
+  admin.initializeApp();
+}
 
 export default admin;
