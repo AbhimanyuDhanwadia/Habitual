@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotification } from '../../contexts/NotificationContext';
 import { tasksAPI, todosAPI } from '../../services/api';
 import './DailyTasks.css';
 
@@ -15,6 +16,8 @@ export default function DailyTasks() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const inputRef = useRef(null);
+  const { showNotification } = useNotification();
+  const [isAdding, setIsAdding] = useState(false);
 
   const fetchTasks = async (date) => {
     try {
@@ -22,6 +25,7 @@ export default function DailyTasks() {
       setTasks(res.data.tasks || []);
     } catch (err) {
       console.error('Error fetching tasks:', err);
+      showNotification({ message: 'Failed to load tasks', type: 'error' });
     }
   };
 
@@ -54,15 +58,21 @@ export default function DailyTasks() {
 
   const handleAddTask = async (e) => {
     e.preventDefault();
-    if (!newTask.trim()) return;
+    if (!newTask.trim() || isAdding) return;
 
     try {
+      setIsAdding(true);
       const res = await tasksAPI.create({ title: newTask.trim(), date: selectedDate });
       setTasks([...tasks, res.data.task]);
       setNewTask('');
       inputRef.current?.focus();
+      showNotification({ message: 'Task added successfully', type: 'success' });
     } catch (err) {
       console.error('Error creating task:', err);
+      const msg = err.response ? `API Error ${err.response.status}` : err.message;
+      showNotification({ message: `Failed to add task: ${msg}`, type: 'error' });
+    } finally {
+      setIsAdding(false);
     }
   };
 
