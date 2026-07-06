@@ -30,7 +30,8 @@ export default function Streaks() {
       setTodos(todosRes.data.todos || []);
     } catch (error) {
       console.error(error);
-      showNotification({ message: 'Error loading streak data', type: 'error' });
+      const msg = error.response ? `API Error ${error.response.status}` : error.message;
+      showNotification({ message: `Error loading streak data: ${msg}`, type: 'error' });
     } finally {
       setLoading(false);
     }
