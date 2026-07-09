@@ -17,9 +17,8 @@ router.get('/', async (req, res) => {
   try {
     const { date } = req.query;
     const queryDate = date ? new Date(date) : new Date();
-    const startOfDay = new Date(queryDate.getFullYear(), queryDate.getMonth(), queryDate.getDate());
-    const endOfDay = new Date(startOfDay);
-    endOfDay.setDate(endOfDay.getDate() + 1);
+    const startOfDay = new Date(Date.UTC(queryDate.getUTCFullYear(), queryDate.getUTCMonth(), queryDate.getUTCDate()));
+    const endOfDay = new Date(startOfDay.getTime() + 86400000);
 
     let tasks = await DailyTask.find({
       userId: req.user._id,
@@ -65,7 +64,7 @@ router.post('/', [
   try {
     const { title, date, isHabitGenerated, habitId } = req.body;
     const taskDate = date ? new Date(date) : new Date();
-    const normalizedDate = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
+    const normalizedDate = new Date(Date.UTC(taskDate.getUTCFullYear(), taskDate.getUTCMonth(), taskDate.getUTCDate()));
 
     // Get count for ordering
     const count = await DailyTask.countDocuments({
@@ -158,8 +157,8 @@ router.get('/history', async (req, res) => {
     const month = parseInt(req.query.month) || new Date().getMonth() + 1;
     const year = parseInt(req.query.year) || new Date().getFullYear();
 
-    const startOfMonth = new Date(year, month - 1, 1);
-    const endOfMonth = new Date(year, month, 1);
+    const startOfMonth = new Date(Date.UTC(year, month - 1, 1));
+    const endOfMonth = new Date(Date.UTC(year, month, 1));
 
     const tasks = await DailyTask.find({
       userId: req.user._id,

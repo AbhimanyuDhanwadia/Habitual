@@ -51,9 +51,39 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal server error' });
 });
 
+import Habit from './models/Habit.js';
+import ShopItem from './models/ShopItem.js';
+import { defaultHabits, defaultShopItems } from './data/seedData.js';
+
+/**
+ * Auto-seed default data if not already present.
+ * This ensures production databases always have the required habits and shop items
+ * without needing a manual `npm run seed` step.
+ */
+const ensureSeeded = async () => {
+  try {
+    const habitCount = await Habit.countDocuments();
+    if (habitCount === 0) {
+      console.log('⚠️  No habits found in database. Auto-seeding defaults...');
+      await Habit.insertMany(defaultHabits);
+      console.log(`✅ Auto-seeded ${defaultHabits.length} default habits`);
+    }
+
+    const shopCount = await ShopItem.countDocuments();
+    if (shopCount === 0) {
+      console.log('⚠️  No shop items found in database. Auto-seeding defaults...');
+      await ShopItem.insertMany(defaultShopItems);
+      console.log(`✅ Auto-seeded ${defaultShopItems.length} shop items`);
+    }
+  } catch (error) {
+    console.error('Auto-seed warning (non-fatal):', error.message);
+  }
+};
+
 // Start server
 const start = async () => {
   await connectDB();
+  await ensureSeeded();
   app.listen(PORT, () => {
     console.log(`\n🚀 Habitual API running on http://localhost:${PORT}`);
     console.log(`   Health check: http://localhost:${PORT}/api/health\n`);

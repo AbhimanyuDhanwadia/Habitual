@@ -67,7 +67,7 @@ router.post('/:id/adopt', async (req, res) => {
 
     // Create a daily task for today
     const today = new Date();
-    const normalizedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const normalizedDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
 
     await DailyTask.create({
       userId: req.user._id,

@@ -30,11 +30,11 @@ export const updateStreak = async (userId) => {
   if (!user) return null;
 
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
   if (user.lastActiveDate) {
     const lastActive = new Date(user.lastActiveDate);
-    const lastActiveDay = new Date(lastActive.getFullYear(), lastActive.getMonth(), lastActive.getDate());
+    const lastActiveDay = new Date(Date.UTC(lastActive.getUTCFullYear(), lastActive.getUTCMonth(), lastActive.getUTCDate()));
     const diffMs = today.getTime() - lastActiveDay.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
