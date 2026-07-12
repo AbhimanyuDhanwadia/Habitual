@@ -1,6 +1,8 @@
 import express from 'express';
+import { param } from 'express-validator';
 import Notification from '../models/Notification.js';
 import { auth } from '../middleware/auth.js';
+import { validateRequest } from '../middleware/validateRequest.js';
 
 const router = express.Router();
 router.use(auth);
@@ -21,7 +23,10 @@ router.get('/', async (req, res) => {
 });
 
 // PATCH /api/notifications/:id/read
-router.patch('/:id/read', async (req, res) => {
+router.patch('/:id/read', [
+  param('id').isMongoId().withMessage('Notification ID must be valid'),
+  validateRequest,
+], async (req, res) => {
   try {
     const notification = await Notification.findOne({ _id: req.params.id, userId: req.user._id });
     if (!notification) {

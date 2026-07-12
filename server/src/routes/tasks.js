@@ -1,7 +1,8 @@
 import express from 'express';
-import { body } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import DailyTask from '../models/DailyTask.js';
 import { auth } from '../middleware/auth.js';
+import { validateRequest } from '../middleware/validateRequest.js';
 import { awardTaskCompletion, awardDailyCompletion, updateStreak } from '../services/rewardService.js';
 
 import User from '../models/User.js';
@@ -12,63 +13,108 @@ const router = express.Router();
 // All routes require authentication
 router.use(auth);
 
+const getDateKey = (date) => date.toISOString().split('T')[0];
+
+const getDayBounds = (dateValue) => {
+  const queryDate = dateValue ? new Date(dateValue) : new Date();
+  if (Number.isNaN(queryDate.getTime())) return null;
+
+  const startOfDay = new Date(Date.UTC(queryDate.getUTCFullYear(), queryDate.getUTCMonth(), queryDate.getUTCDate()));
+  const endOfDay = new Date(startOfDay.getTime() + 86400000);
+
+  return { startOfDay, endOfDay };
+};
+
+const buildGeneratedTaskOps = async (userId, startOfDay) => {
+  const tasks = await DailyTask.find({
+    userId,
+    date: { $gte: startOfDay, $lt: new Date(startOfDay.getTime() + 86400000) },
+  }).sort({ order: 1, createdAt: 1 });
+
+  const user = await User.findById(userId).populate('adoptedHabits');
+  const ops = [];
+
+  if (user?.adoptedHabits?.length > 0) {
+    const existingHabitIds = tasks
+      .filter(t => t.isHabitGenerated && t.habitId)
+      .map(t => t.habitId.toString());
+
+    for (const habit of user.adoptedHabits) {
+      if (habit && !existingHabitIds.includes(habit._id.toString())) {
+        const doc = {
+          userId,
+          title: `${habit.icon} ${habit.title}`,
+          date: startOfDay,
+          isHabitGenerated: true,
+          habitId: habit._id,
+          order: tasks.length + ops.length,
+        };
+
+        ops.push({
+          updateOne: {
+            filter: {
+              userId,
+              date: startOfDay,
+              isHabitGenerated: true,
+              habitId: habit._id,
+            },
+            update: { $setOnInsert: doc },
+            upsert: true,
+          },
+        });
+      }
+    }
+  }
+
+  if (user?.recurringTasks?.length > 0) {
+    const existingManualTitles = tasks
+      .filter(t => !t.isHabitGenerated)
+      .map(t => t.title);
+
+    for (const title of user.recurringTasks) {
+      if (!existingManualTitles.includes(title)) {
+        const doc = {
+          userId,
+          title,
+          date: startOfDay,
+          isHabitGenerated: false,
+          order: tasks.length + ops.length,
+        };
+
+        ops.push({
+          updateOne: {
+            filter: {
+              userId,
+              date: startOfDay,
+              isHabitGenerated: false,
+              title,
+            },
+            update: { $setOnInsert: doc },
+            upsert: true,
+          },
+        });
+      }
+    }
+  }
+
+  return ops;
+};
+
 // GET /api/tasks?date=YYYY-MM-DD
-router.get('/', async (req, res) => {
+router.get('/', [
+  query('date').optional().isISO8601().withMessage('Date must be a valid ISO date'),
+  validateRequest,
+], async (req, res) => {
   try {
-    const { date } = req.query;
-    const queryDate = date ? new Date(date) : new Date();
-    const startOfDay = new Date(Date.UTC(queryDate.getUTCFullYear(), queryDate.getUTCMonth(), queryDate.getUTCDate()));
-    const endOfDay = new Date(startOfDay.getTime() + 86400000);
+    const bounds = getDayBounds(req.query.date);
+    if (!bounds) {
+      return res.status(400).json({ message: 'Invalid date' });
+    }
 
-    let tasks = await DailyTask.find({
+    const tasks = await DailyTask.find({
       userId: req.user._id,
-      date: { $gte: startOfDay, $lt: endOfDay },
+      date: { $gte: bounds.startOfDay, $lt: bounds.endOfDay },
     }).sort({ order: 1, createdAt: 1 });
-
-    const user = await User.findById(req.user._id).populate('adoptedHabits');
-    const newTasksToCreate = [];
-
-    // 1) Auto-generate missing HABIT tasks for this date
-    if (user && user.adoptedHabits && user.adoptedHabits.length > 0) {
-      const existingHabitIds = tasks.filter(t => t.isHabitGenerated && t.habitId).map(t => t.habitId.toString());
-
-      for (const habit of user.adoptedHabits) {
-        if (habit && !existingHabitIds.includes(habit._id.toString())) {
-          newTasksToCreate.push({
-            userId: req.user._id,
-            title: `${habit.icon} ${habit.title}`,
-            date: startOfDay,
-            isHabitGenerated: true,
-            habitId: habit._id,
-            order: tasks.length + newTasksToCreate.length,
-          });
-        }
-      }
-    }
-
-    // 2) Auto-generate missing RECURRING manual tasks for this date
-    if (user && user.recurringTasks && user.recurringTasks.length > 0) {
-      const existingManualTitles = tasks
-        .filter(t => !t.isHabitGenerated)
-        .map(t => t.title);
-
-      for (const title of user.recurringTasks) {
-        if (!existingManualTitles.includes(title)) {
-          newTasksToCreate.push({
-            userId: req.user._id,
-            title,
-            date: startOfDay,
-            isHabitGenerated: false,
-            order: tasks.length + newTasksToCreate.length,
-          });
-        }
-      }
-    }
-
-    if (newTasksToCreate.length > 0) {
-      const createdTasks = await DailyTask.insertMany(newTasksToCreate);
-      tasks = [...tasks, ...createdTasks];
-    }
 
     res.json({ tasks });
   } catch (error) {
@@ -77,25 +123,59 @@ router.get('/', async (req, res) => {
   }
 });
 
+// POST /api/tasks/generate
+router.post('/generate', [
+  body('date').optional().isISO8601().withMessage('Date must be a valid ISO date'),
+  validateRequest,
+], async (req, res) => {
+  try {
+    const bounds = getDayBounds(req.body.date);
+    if (!bounds) {
+      return res.status(400).json({ message: 'Invalid date' });
+    }
+
+    const ops = await buildGeneratedTaskOps(req.user._id, bounds.startOfDay);
+    if (ops.length > 0) {
+      await DailyTask.bulkWrite(ops, { ordered: false });
+    }
+
+    const tasks = await DailyTask.find({
+      userId: req.user._id,
+      date: { $gte: bounds.startOfDay, $lt: bounds.endOfDay },
+    }).sort({ order: 1, createdAt: 1 });
+
+    res.json({ tasks });
+  } catch (error) {
+    console.error('Generate tasks error:', error);
+    res.status(500).json({ message: 'Error generating tasks' });
+  }
+});
+
 // POST /api/tasks
 router.post('/', [
   body('title').trim().notEmpty().withMessage('Task title is required'),
+  body('date').optional().isISO8601().withMessage('Date must be a valid ISO date'),
+  body('isHabitGenerated').optional().isBoolean().withMessage('isHabitGenerated must be boolean'),
+  body('habitId').optional().isMongoId().withMessage('Habit ID must be valid'),
+  validateRequest,
 ], async (req, res) => {
   try {
     const { title, date, isHabitGenerated, habitId } = req.body;
-    const taskDate = date ? new Date(date) : new Date();
-    const normalizedDate = new Date(Date.UTC(taskDate.getUTCFullYear(), taskDate.getUTCMonth(), taskDate.getUTCDate()));
+    const bounds = getDayBounds(date);
+    if (!bounds) {
+      return res.status(400).json({ message: 'Invalid date' });
+    }
 
     // Get count for ordering
     const count = await DailyTask.countDocuments({
       userId: req.user._id,
-      date: { $gte: normalizedDate, $lt: new Date(normalizedDate.getTime() + 86400000) },
+      date: { $gte: bounds.startOfDay, $lt: bounds.endOfDay },
     });
 
     const task = await DailyTask.create({
       userId: req.user._id,
       title,
-      date: normalizedDate,
+      date: bounds.startOfDay,
       isHabitGenerated: isHabitGenerated || false,
       habitId: habitId || undefined,
       order: count,
@@ -118,7 +198,10 @@ router.post('/', [
 });
 
 // PATCH /api/tasks/:id/toggle
-router.patch('/:id/toggle', async (req, res) => {
+router.patch('/:id/toggle', [
+  param('id').isMongoId().withMessage('Task ID must be valid'),
+  validateRequest,
+], async (req, res) => {
   try {
     const task = await DailyTask.findOne({ _id: req.params.id, userId: req.user._id });
     if (!task) {
@@ -133,7 +216,7 @@ router.patch('/:id/toggle', async (req, res) => {
 
     if (task.completed) {
       // Award coins for completing this task
-      reward = await awardTaskCompletion(req.user._id);
+      reward = await awardTaskCompletion(req.user._id, task._id);
 
       // Update streak
       streakUpdate = await updateStreak(req.user._id);
@@ -149,7 +232,7 @@ router.patch('/:id/toggle', async (req, res) => {
 
       const allCompleted = dayTasks.every(t => t.completed);
       if (allCompleted && dayTasks.length > 0) {
-        const dailyBonus = await awardDailyCompletion(req.user._id);
+        const dailyBonus = await awardDailyCompletion(req.user._id, getDateKey(startOfDay));
         reward = {
           ...reward,
           dailyBonus: dailyBonus.earned,
@@ -166,7 +249,10 @@ router.patch('/:id/toggle', async (req, res) => {
 });
 
 // DELETE /api/tasks/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', [
+  param('id').isMongoId().withMessage('Task ID must be valid'),
+  validateRequest,
+], async (req, res) => {
   try {
     const task = await DailyTask.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
     if (!task) {
@@ -189,7 +275,11 @@ router.delete('/:id', async (req, res) => {
 });
 
 // GET /api/tasks/history?month=MM&year=YYYY
-router.get('/history', async (req, res) => {
+router.get('/history', [
+  query('month').optional().isInt({ min: 1, max: 12 }).withMessage('Month must be between 1 and 12'),
+  query('year').optional().isInt({ min: 1970, max: 3000 }).withMessage('Year must be valid'),
+  validateRequest,
+], async (req, res) => {
   try {
     const month = parseInt(req.query.month) || new Date().getMonth() + 1;
     const year = parseInt(req.query.year) || new Date().getFullYear();

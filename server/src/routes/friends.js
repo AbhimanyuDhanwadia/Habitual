@@ -1,7 +1,9 @@
 import express from 'express';
+import { body, param, query } from 'express-validator';
 import User from '../models/User.js';
 import Notification from '../models/Notification.js';
 import { auth } from '../middleware/auth.js';
+import { validateRequest } from '../middleware/validateRequest.js';
 
 const router = express.Router();
 router.use(auth);
@@ -24,7 +26,10 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/friends/request
-router.post('/request', async (req, res) => {
+router.post('/request', [
+  body('username').trim().notEmpty().withMessage('Username is required'),
+  validateRequest,
+], async (req, res) => {
   try {
     const { username } = req.body;
     if (!username) return res.status(400).json({ message: 'Username is required' });
@@ -34,12 +39,12 @@ router.post('/request', async (req, res) => {
     if (!friend) return res.status(404).json({ message: 'User not found' });
 
     // Check if already friends
-    if (friend.friends.includes(req.user._id)) {
+    if (friend.friends.some(id => id.toString() === req.user._id.toString())) {
       return res.status(400).json({ message: 'Already friends' });
     }
 
     // Check if request already sent
-    if (friend.friendRequests.includes(req.user._id)) {
+    if (friend.friendRequests.some(id => id.toString() === req.user._id.toString())) {
       return res.status(400).json({ message: 'Friend request already sent' });
     }
 
@@ -61,7 +66,10 @@ router.post('/request', async (req, res) => {
 });
 
 // POST /api/friends/accept
-router.post('/accept', async (req, res) => {
+router.post('/accept', [
+  body('friendId').isMongoId().withMessage('Friend ID must be valid'),
+  validateRequest,
+], async (req, res) => {
   try {
     const { friendId } = req.body;
     
@@ -69,13 +77,16 @@ router.post('/accept', async (req, res) => {
     const friend = await User.findById(friendId);
 
     if (!friend) return res.status(404).json({ message: 'User not found' });
+    if (!user.friendRequests.some(id => id.toString() === friendId)) {
+      return res.status(403).json({ message: 'No pending friend request from this user' });
+    }
 
     // Remove from requests
     user.friendRequests = user.friendRequests.filter(id => id.toString() !== friendId);
     
     // Add to friends for both
-    if (!user.friends.includes(friendId)) user.friends.push(friendId);
-    if (!friend.friends.includes(user._id)) friend.friends.push(user._id);
+    if (!user.friends.some(id => id.toString() === friendId)) user.friends.push(friendId);
+    if (!friend.friends.some(id => id.toString() === user._id.toString())) friend.friends.push(user._id);
 
     await user.save();
     await friend.save();
@@ -95,12 +106,15 @@ router.post('/accept', async (req, res) => {
 });
 
 // POST /api/friends/nudge
-router.post('/nudge', async (req, res) => {
+router.post('/nudge', [
+  body('friendId').isMongoId().withMessage('Friend ID must be valid'),
+  validateRequest,
+], async (req, res) => {
   try {
     const { friendId } = req.body;
     
     const user = await User.findById(req.user._id);
-    if (!user.friends.includes(friendId)) {
+    if (!user.friends.some(id => id.toString() === friendId)) {
       return res.status(403).json({ message: 'Can only nudge friends' });
     }
 
@@ -119,14 +133,19 @@ router.post('/nudge', async (req, res) => {
 });
 
 // GET /api/friends/:id/history
-router.get('/:id/history', async (req, res) => {
+router.get('/:id/history', [
+  param('id').isMongoId().withMessage('Friend ID must be valid'),
+  query('month').optional().isInt({ min: 1, max: 12 }).withMessage('Month must be between 1 and 12'),
+  query('year').optional().isInt({ min: 1970, max: 3000 }).withMessage('Year must be valid'),
+  validateRequest,
+], async (req, res) => {
   try {
     const { id } = req.params;
     const month = parseInt(req.query.month) || new Date().getMonth() + 1;
     const year = parseInt(req.query.year) || new Date().getFullYear();
 
     const user = await User.findById(req.user._id);
-    if (!user.friends.includes(id)) {
+    if (!user.friends.some(friendId => friendId.toString() === id)) {
       return res.status(403).json({ message: 'Not authorized to view this user\'s history' });
     }
 

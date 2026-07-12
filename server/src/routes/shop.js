@@ -1,14 +1,19 @@
 import express from 'express';
+import { param, query } from 'express-validator';
 import ShopItem from '../models/ShopItem.js';
 import User from '../models/User.js';
 import { auth } from '../middleware/auth.js';
+import { validateRequest } from '../middleware/validateRequest.js';
 import { purchaseItem } from '../services/rewardService.js';
 
 const router = express.Router();
 router.use(auth);
 
 // GET /api/shop?type=avatar
-router.get('/', async (req, res) => {
+router.get('/', [
+  query('type').optional().isIn(['avatar', 'theme', 'border', 'palette']).withMessage('Invalid shop item type'),
+  validateRequest,
+], async (req, res) => {
   try {
     const { type } = req.query;
     const query = {};
@@ -36,7 +41,10 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/shop/purchase/:itemId
-router.post('/purchase/:itemId', async (req, res) => {
+router.post('/purchase/:itemId', [
+  param('itemId').isMongoId().withMessage('Item ID must be valid'),
+  validateRequest,
+], async (req, res) => {
   try {
     const item = await ShopItem.findById(req.params.itemId);
     if (!item) {

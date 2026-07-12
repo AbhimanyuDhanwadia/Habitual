@@ -27,11 +27,26 @@ const transactionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ShopItem',
   },
+  taskId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'DailyTask',
+  },
+  dateKey: {
+    type: String,
+    trim: true,
+  },
+  rewardKey: {
+    type: String,
+    unique: true,
+    sparse: true,
+    trim: true,
+  },
 }, {
   timestamps: true,
 });
 
 transactionSchema.index({ userId: 1, createdAt: -1 });
+transactionSchema.index({ userId: 1, rewardKey: 1 }, { unique: true, sparse: true });
 
 const Transaction = mongoose.model('Transaction', transactionSchema);
 export default Transaction;

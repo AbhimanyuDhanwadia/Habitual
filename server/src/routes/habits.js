@@ -1,14 +1,19 @@
 import express from 'express';
+import { param, query } from 'express-validator';
 import Habit from '../models/Habit.js';
 import DailyTask from '../models/DailyTask.js';
 import User from '../models/User.js';
 import { auth } from '../middleware/auth.js';
+import { validateRequest } from '../middleware/validateRequest.js';
 
 const router = express.Router();
 router.use(auth);
 
 // GET /api/habits?category=X
-router.get('/', async (req, res) => {
+router.get('/', [
+  query('category').optional().isIn(['fitness', 'mindfulness', 'nutrition', 'sleep', 'social', 'learning', 'grooming', 'health', 'productivity', 'better_life']).withMessage('Invalid category'),
+  validateRequest,
+], async (req, res) => {
   try {
     const { category } = req.query;
     const query = {};
@@ -33,7 +38,10 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/habits/:id
-router.get('/:id', async (req, res) => {
+router.get('/:id', [
+  param('id').isMongoId().withMessage('Habit ID must be valid'),
+  validateRequest,
+], async (req, res) => {
   try {
     const habit = await Habit.findById(req.params.id);
     if (!habit) {
@@ -47,7 +55,10 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/habits/:id/adopt
-router.post('/:id/adopt', async (req, res) => {
+router.post('/:id/adopt', [
+  param('id').isMongoId().withMessage('Habit ID must be valid'),
+  validateRequest,
+], async (req, res) => {
   try {
     const habit = await Habit.findById(req.params.id);
     if (!habit) {
@@ -57,7 +68,7 @@ router.post('/:id/adopt', async (req, res) => {
     const user = await User.findById(req.user._id);
 
     // Check if already adopted
-    if (user.adoptedHabits.includes(habit._id)) {
+    if (user.adoptedHabits.some(id => id.toString() === habit._id.toString())) {
       return res.status(400).json({ message: 'Habit already adopted' });
     }
 
@@ -88,7 +99,10 @@ router.post('/:id/adopt', async (req, res) => {
 });
 
 // POST /api/habits/:id/unadopt
-router.post('/:id/unadopt', async (req, res) => {
+router.post('/:id/unadopt', [
+  param('id').isMongoId().withMessage('Habit ID must be valid'),
+  validateRequest,
+], async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     user.adoptedHabits = user.adoptedHabits.filter(id => id.toString() !== req.params.id);

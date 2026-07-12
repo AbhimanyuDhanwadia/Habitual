@@ -1,13 +1,21 @@
 import express from 'express';
+import { body } from 'express-validator';
 import User from '../models/User.js';
 import Transaction from '../models/Transaction.js';
 import { auth } from '../middleware/auth.js';
+import { validateRequest } from '../middleware/validateRequest.js';
 
 const router = express.Router();
 router.use(auth);
 
 // PATCH /api/user/profile
-router.patch('/profile', async (req, res) => {
+router.patch('/profile', [
+  body('firstName').optional().trim().notEmpty().withMessage('First name cannot be empty'),
+  body('lastName').optional().trim().notEmpty().withMessage('Last name cannot be empty'),
+  body('username').optional().trim().isLength({ min: 3, max: 24 }).withMessage('Username must be 3-24 characters'),
+  body('dob').optional({ nullable: true, checkFalsy: true }).isISO8601().withMessage('Date of birth must be a valid date'),
+  validateRequest,
+], async (req, res) => {
   try {
     const { firstName, lastName, username, dob } = req.body;
     const user = await User.findById(req.user._id);
@@ -33,7 +41,10 @@ router.patch('/profile', async (req, res) => {
 });
 
 // PATCH /api/user/avatar
-router.patch('/avatar', async (req, res) => {
+router.patch('/avatar', [
+  body('avatar').trim().notEmpty().withMessage('Avatar is required'),
+  validateRequest,
+], async (req, res) => {
   try {
     const { avatar } = req.body;
     const user = await User.findById(req.user._id);
@@ -47,7 +58,10 @@ router.patch('/avatar', async (req, res) => {
 });
 
 // PATCH /api/user/theme
-router.patch('/theme', async (req, res) => {
+router.patch('/theme', [
+  body('theme').trim().notEmpty().withMessage('Theme is required'),
+  validateRequest,
+], async (req, res) => {
   try {
     const { theme } = req.body;
     const user = await User.findById(req.user._id);

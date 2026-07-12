@@ -48,6 +48,7 @@ export const authAPI = {
 // ---- Tasks API ----
 export const tasksAPI = {
   getByDate: (date) => api.get(`/tasks`, { params: { date } }),
+  generateForDate: (date) => api.post('/tasks/generate', { date }),
   create: (data) => api.post('/tasks', data),
   toggle: (id) => api.patch(`/tasks/${id}/toggle`),
   delete: (id) => api.delete(`/tasks/${id}`),

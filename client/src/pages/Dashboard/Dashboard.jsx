@@ -17,7 +17,7 @@ export default function Dashboard() {
       try {
         const today = toLocalDateKey();
         const [tasksRes, todosRes, historyRes] = await Promise.all([
-          tasksAPI.getByDate(today),
+          tasksAPI.generateForDate(today),
           todosAPI.getAll({ completed: false }),
           tasksAPI.getHistory(new Date().getMonth() + 1, new Date().getFullYear()),
         ]);

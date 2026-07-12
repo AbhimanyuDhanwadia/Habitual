@@ -22,7 +22,7 @@ export default function DailyTasks() {
 
   const fetchTasks = async (date) => {
     try {
-      const res = await tasksAPI.getByDate(date);
+      const res = await tasksAPI.generateForDate(date);
       setTasks(res.data.tasks || []);
     } catch (err) {
       console.error('Error fetching tasks:', err);

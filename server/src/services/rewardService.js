@@ -21,6 +21,30 @@ const ALL_TASKS_BONUS = 10;
 // Signup bonus
 const SIGNUP_BONUS = 50;
 
+const getUserCoinBalance = async (userId) => {
+  const user = await User.findById(userId).select('coins');
+  return user?.coins || 0;
+};
+
+const createRewardTransaction = async (data) => {
+  try {
+    return await Transaction.create(data);
+  } catch (error) {
+    if (error.code === 11000) {
+      return null;
+    }
+    throw error;
+  }
+};
+
+const incrementCoins = async (userId, amount) => {
+  return User.findByIdAndUpdate(
+    userId,
+    { $inc: { coins: amount } },
+    { new: true }
+  );
+};
+
 /**
  * Update user streak based on activity.
  * Call this when a user completes a task or logs in.
@@ -64,17 +88,20 @@ export const updateStreak = async (userId) => {
   let milestoneReward = null;
   if (STREAK_MILESTONES[user.currentStreak]) {
     const milestone = STREAK_MILESTONES[user.currentStreak];
-    user.coins += milestone.coins;
-
-    await Transaction.create({
+    const rewardKey = `${user._id}:milestone:${user.currentStreak}`;
+    const transaction = await createRewardTransaction({
       userId: user._id,
       amount: milestone.coins,
       type: 'earned',
       source: 'milestone',
       description: `🏆 ${milestone.label} (+${milestone.coins} coins)`,
+      rewardKey,
     });
 
-    milestoneReward = milestone;
+    if (transaction) {
+      user.coins += milestone.coins;
+      milestoneReward = milestone;
+    }
   }
 
   await user.save();
@@ -90,42 +117,58 @@ export const updateStreak = async (userId) => {
 /**
  * Award coins for completing a task
  */
-export const awardTaskCompletion = async (userId) => {
-  const user = await User.findById(userId);
-  if (!user) return null;
-
-  user.coins += TASK_COMPLETE_COINS;
-
-  await Transaction.create({
-    userId: user._id,
+export const awardTaskCompletion = async (userId, taskId) => {
+  const rewardKey = `${userId}:task:${taskId}`;
+  const transaction = await createRewardTransaction({
+    userId,
     amount: TASK_COMPLETE_COINS,
     type: 'earned',
     source: 'task-complete',
     description: `Task completed (+${TASK_COMPLETE_COINS} coins)`,
+    taskId,
+    rewardKey,
   });
 
-  await user.save();
+  if (!transaction) {
+    return {
+      coins: await getUserCoinBalance(userId),
+      earned: 0,
+      alreadyAwarded: true,
+    };
+  }
+
+  const user = await incrementCoins(userId, TASK_COMPLETE_COINS);
+  if (!user) return null;
+
   return { coins: user.coins, earned: TASK_COMPLETE_COINS };
 };
 
 /**
  * Award bonus for completing ALL daily tasks
  */
-export const awardDailyCompletion = async (userId) => {
-  const user = await User.findById(userId);
-  if (!user) return null;
-
-  user.coins += ALL_TASKS_BONUS;
-
-  await Transaction.create({
-    userId: user._id,
+export const awardDailyCompletion = async (userId, dateKey) => {
+  const rewardKey = `${userId}:daily-completion:${dateKey}`;
+  const transaction = await createRewardTransaction({
+    userId,
     amount: ALL_TASKS_BONUS,
     type: 'earned',
     source: 'daily-completion',
     description: `All daily tasks completed! (+${ALL_TASKS_BONUS} coins)`,
+    dateKey,
+    rewardKey,
   });
 
-  await user.save();
+  if (!transaction) {
+    return {
+      coins: await getUserCoinBalance(userId),
+      earned: 0,
+      alreadyAwarded: true,
+    };
+  }
+
+  const user = await incrementCoins(userId, ALL_TASKS_BONUS);
+  if (!user) return null;
+
   return { coins: user.coins, earned: ALL_TASKS_BONUS };
 };
 
@@ -136,17 +179,23 @@ export const awardSignupBonus = async (userId) => {
   const user = await User.findById(userId);
   if (!user) return null;
 
-  user.coins += SIGNUP_BONUS;
-
-  await Transaction.create({
+  const rewardKey = `${user._id}:signup-bonus`;
+  const transaction = await createRewardTransaction({
     userId: user._id,
     amount: SIGNUP_BONUS,
     type: 'earned',
     source: 'signup-bonus',
     description: `Welcome to Habitual! (+${SIGNUP_BONUS} coins)`,
+    rewardKey,
   });
 
+  if (!transaction) {
+    return { coins: user.coins, earned: 0, alreadyAwarded: true };
+  }
+
+  user.coins += SIGNUP_BONUS;
   await user.save();
+
   return { coins: user.coins, earned: SIGNUP_BONUS };
 };
 
@@ -161,7 +210,7 @@ export const purchaseItem = async (userId, itemId, price) => {
     return { success: false, message: 'Insufficient coins' };
   }
 
-  if (user.ownedItems.includes(itemId)) {
+  if (user.ownedItems.some(id => id.toString() === itemId.toString())) {
     return { success: false, message: 'Item already owned' };
   }
 

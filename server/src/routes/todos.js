@@ -1,13 +1,19 @@
 import express from 'express';
-import { body } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import Todo from '../models/Todo.js';
 import { auth } from '../middleware/auth.js';
+import { validateRequest } from '../middleware/validateRequest.js';
 
 const router = express.Router();
 router.use(auth);
 
 // GET /api/todos
-router.get('/', async (req, res) => {
+router.get('/', [
+  query('completed').optional().isBoolean().withMessage('completed must be boolean'),
+  query('priority').optional().isIn(['low', 'medium', 'high', 'critical']).withMessage('Invalid priority'),
+  query('sort').optional().isIn(['created', 'deadline', 'priority']).withMessage('Invalid sort option'),
+  validateRequest,
+], async (req, res) => {
   try {
     const { completed, priority, sort } = req.query;
     const query = { userId: req.user._id };
@@ -34,6 +40,12 @@ router.get('/', async (req, res) => {
 // POST /api/todos
 router.post('/', [
   body('title').trim().notEmpty().withMessage('Title is required'),
+  body('deadline').optional({ nullable: true, checkFalsy: true }).isISO8601().withMessage('Deadline must be a valid date'),
+  body('priority').optional().isIn(['low', 'medium', 'high', 'critical']).withMessage('Invalid priority'),
+  body('phases').optional().isArray().withMessage('Phases must be an array'),
+  body('phases.*.title').optional().trim().notEmpty().withMessage('Phase title cannot be empty'),
+  body('phases.*.deadline').optional({ nullable: true, checkFalsy: true }).isISO8601().withMessage('Phase deadline must be a valid date'),
+  validateRequest,
 ], async (req, res) => {
   try {
     const { title, description, deadline, priority, phases } = req.body;
@@ -55,7 +67,16 @@ router.post('/', [
 });
 
 // PATCH /api/todos/:id
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', [
+  param('id').isMongoId().withMessage('Todo ID must be valid'),
+  body('title').optional().trim().notEmpty().withMessage('Title cannot be empty'),
+  body('deadline').optional({ nullable: true, checkFalsy: true }).isISO8601().withMessage('Deadline must be a valid date'),
+  body('priority').optional().isIn(['low', 'medium', 'high', 'critical']).withMessage('Invalid priority'),
+  body('phases').optional().isArray().withMessage('Phases must be an array'),
+  body('phases.*.title').optional().trim().notEmpty().withMessage('Phase title cannot be empty'),
+  body('phases.*.deadline').optional({ nullable: true, checkFalsy: true }).isISO8601().withMessage('Phase deadline must be a valid date'),
+  validateRequest,
+], async (req, res) => {
   try {
     const { title, description, deadline, priority, phases } = req.body;
     const todo = await Todo.findOne({ _id: req.params.id, userId: req.user._id });
@@ -79,7 +100,11 @@ router.patch('/:id', async (req, res) => {
 });
 
 // PATCH /api/todos/:id/phases/:phaseIndex
-router.patch('/:id/phases/:phaseIndex', async (req, res) => {
+router.patch('/:id/phases/:phaseIndex', [
+  param('id').isMongoId().withMessage('Todo ID must be valid'),
+  param('phaseIndex').isInt({ min: 0 }).withMessage('Phase index must be valid'),
+  validateRequest,
+], async (req, res) => {
   try {
     const todo = await Todo.findOne({ _id: req.params.id, userId: req.user._id });
     if (!todo) {
@@ -106,7 +131,10 @@ router.patch('/:id/phases/:phaseIndex', async (req, res) => {
 });
 
 // DELETE /api/todos/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', [
+  param('id').isMongoId().withMessage('Todo ID must be valid'),
+  validateRequest,
+], async (req, res) => {
   try {
     const todo = await Todo.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
     if (!todo) {
