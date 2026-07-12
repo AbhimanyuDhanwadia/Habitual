@@ -53,12 +53,12 @@ app.use((err, req, res, next) => {
 
 import Habit from './models/Habit.js';
 import ShopItem from './models/ShopItem.js';
+import DailyTask from './models/DailyTask.js';
+import User from './models/User.js';
 import { defaultHabits, defaultShopItems } from './data/seedData.js';
 
 /**
  * Auto-seed default data if not already present.
- * This ensures production databases always have the required habits and shop items
- * without needing a manual `npm run seed` step.
  */
 const ensureSeeded = async () => {
   try {
@@ -80,10 +80,40 @@ const ensureSeeded = async () => {
   }
 };
 
+/**
+ * One-time migration: backfill existing manual daily tasks into user.recurringTasks.
+ * This ensures users who already created tasks before the recurring feature
+ * will have those tasks auto-generated on future dates.
+ */
+const migrateRecurringTasks = async () => {
+  try {
+    const users = await User.find({});
+    for (const user of users) {
+      // Skip users who already have recurringTasks set
+      if (user.recurringTasks && user.recurringTasks.length > 0) continue;
+
+      // Find all unique manual task titles for this user
+      const manualTasks = await DailyTask.distinct('title', {
+        userId: user._id,
+        isHabitGenerated: false,
+      });
+
+      if (manualTasks.length > 0) {
+        user.recurringTasks = manualTasks;
+        await user.save();
+        console.log(`✅ Migrated ${manualTasks.length} recurring tasks for user ${user.username}`);
+      }
+    }
+  } catch (error) {
+    console.error('Migration warning (non-fatal):', error.message);
+  }
+};
+
 // Start server
 const start = async () => {
   await connectDB();
   await ensureSeeded();
+  await migrateRecurringTasks();
   app.listen(PORT, () => {
     console.log(`\n🚀 Habitual API running on http://localhost:${PORT}`);
     console.log(`   Health check: http://localhost:${PORT}/api/health\n`);

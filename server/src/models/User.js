@@ -67,6 +67,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Habit',
   }],
+  recurringTasks: [{
+    type: String,
+    trim: true,
+  }],
   friends: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -98,6 +102,7 @@ userSchema.methods.toPublicJSON = function () {
     ownedItems: this.ownedItems,
     activeTheme: this.activeTheme,
     adoptedHabits: this.adoptedHabits,
+    recurringTasks: this.recurringTasks,
     friends: this.friends,
     friendRequests: this.friendRequests,
     createdAt: this.createdAt,

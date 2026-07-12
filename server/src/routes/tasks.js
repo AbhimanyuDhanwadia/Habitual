@@ -25,14 +25,15 @@ router.get('/', async (req, res) => {
       date: { $gte: startOfDay, $lt: endOfDay },
     }).sort({ order: 1, createdAt: 1 });
 
-    // Auto-generate missing habit tasks for this date
     const user = await User.findById(req.user._id).populate('adoptedHabits');
+    const newTasksToCreate = [];
+
+    // 1) Auto-generate missing HABIT tasks for this date
     if (user && user.adoptedHabits && user.adoptedHabits.length > 0) {
-      const existingHabitIds = tasks.filter(t => t.isHabitGenerated).map(t => t.habitId?.toString());
-      
-      const newTasksToCreate = [];
+      const existingHabitIds = tasks.filter(t => t.isHabitGenerated && t.habitId).map(t => t.habitId.toString());
+
       for (const habit of user.adoptedHabits) {
-        if (!existingHabitIds.includes(habit._id.toString())) {
+        if (habit && !existingHabitIds.includes(habit._id.toString())) {
           newTasksToCreate.push({
             userId: req.user._id,
             title: `${habit.icon} ${habit.title}`,
@@ -43,11 +44,30 @@ router.get('/', async (req, res) => {
           });
         }
       }
+    }
 
-      if (newTasksToCreate.length > 0) {
-        const createdTasks = await DailyTask.insertMany(newTasksToCreate);
-        tasks = [...tasks, ...createdTasks];
+    // 2) Auto-generate missing RECURRING manual tasks for this date
+    if (user && user.recurringTasks && user.recurringTasks.length > 0) {
+      const existingManualTitles = tasks
+        .filter(t => !t.isHabitGenerated)
+        .map(t => t.title);
+
+      for (const title of user.recurringTasks) {
+        if (!existingManualTitles.includes(title)) {
+          newTasksToCreate.push({
+            userId: req.user._id,
+            title,
+            date: startOfDay,
+            isHabitGenerated: false,
+            order: tasks.length + newTasksToCreate.length,
+          });
+        }
       }
+    }
+
+    if (newTasksToCreate.length > 0) {
+      const createdTasks = await DailyTask.insertMany(newTasksToCreate);
+      tasks = [...tasks, ...createdTasks];
     }
 
     res.json({ tasks });
@@ -81,6 +101,15 @@ router.post('/', [
       order: count,
     });
 
+    // If this is a manual (non-habit) task, save it as a recurring template
+    if (!isHabitGenerated) {
+      const user = await User.findById(req.user._id);
+      if (!user.recurringTasks.includes(title)) {
+        user.recurringTasks.push(title);
+        await user.save();
+      }
+    }
+
     res.status(201).json({ task });
   } catch (error) {
     console.error('Create task error:', error);
@@ -111,8 +140,7 @@ router.patch('/:id/toggle', async (req, res) => {
 
       // Check if all tasks for the day are complete
       const startOfDay = new Date(task.date);
-      const endOfDay = new Date(startOfDay);
-      endOfDay.setDate(endOfDay.getDate() + 1);
+      const endOfDay = new Date(startOfDay.getTime() + 86400000);
 
       const dayTasks = await DailyTask.find({
         userId: req.user._id,
@@ -144,6 +172,15 @@ router.delete('/:id', async (req, res) => {
     if (!task) {
       return res.status(404).json({ message: 'Task not found' });
     }
+
+    // If it was a recurring manual task, remove it from the recurring list
+    // so it stops showing up on future dates
+    if (!task.isHabitGenerated) {
+      await User.findByIdAndUpdate(req.user._id, {
+        $pull: { recurringTasks: task.title },
+      });
+    }
+
     res.json({ message: 'Task deleted' });
   } catch (error) {
     console.error('Delete task error:', error);
