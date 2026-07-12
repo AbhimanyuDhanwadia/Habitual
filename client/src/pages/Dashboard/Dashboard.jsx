@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { tasksAPI, todosAPI } from '../../services/api';
+import { toLocalDateKey } from '../../utils/date';
 import './Dashboard.css';
 
 export default function Dashboard() {
@@ -14,7 +15,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0];
+        const today = toLocalDateKey();
         const [tasksRes, todosRes, historyRes] = await Promise.all([
           tasksAPI.getByDate(today),
           todosAPI.getAll({ completed: false }),

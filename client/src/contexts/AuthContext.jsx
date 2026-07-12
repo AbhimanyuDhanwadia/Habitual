@@ -103,7 +103,7 @@ export function AuthProvider({ children }) {
     setError(null);
     try {
       // DUMMY MODE
-      if (formData.email === 'dummy@example.com' && formData.password === 'password') {
+      if (import.meta.env.DEV && formData.email === 'dummy@example.com' && formData.password === 'password') {
         const fakeToken = 'dummy_token_12345';
         const fakeUser = {
           _id: 'dummy_user_123',
@@ -216,5 +216,4 @@ export const useAuth = () => {
 };
 
 export default AuthContext;
-
 

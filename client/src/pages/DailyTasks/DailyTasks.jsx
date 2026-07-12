@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotification } from '../../contexts/NotificationContext';
 import { tasksAPI, todosAPI } from '../../services/api';
+import { parseLocalDateKey, toLocalDateKey } from '../../utils/date';
 import './DailyTasks.css';
 
 export default function DailyTasks() {
@@ -11,7 +12,7 @@ export default function DailyTasks() {
   const [tasks, setTasks] = useState([]);
   const [todos, setTodos] = useState([]);
   const [newTask, setNewTask] = useState('');
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(toLocalDateKey());
   const [calendarMonthDate, setCalendarMonthDate] = useState(new Date());
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -110,9 +111,9 @@ export default function DailyTasks() {
   };
 
   const navigateDate = (offset) => {
-    const d = new Date(selectedDate);
+    const d = parseLocalDateKey(selectedDate);
     d.setDate(d.getDate() + offset);
-    setSelectedDate(d.toISOString().split('T')[0]);
+    setSelectedDate(toLocalDateKey(d));
   };
 
   const navigateMonth = (offset) => {
@@ -121,7 +122,7 @@ export default function DailyTasks() {
     setCalendarMonthDate(d);
   };
 
-  const isToday = selectedDate === new Date().toISOString().split('T')[0];
+  const isToday = selectedDate === toLocalDateKey();
   const completed = tasks.filter(t => t.completed).length;
   const total = tasks.length;
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
