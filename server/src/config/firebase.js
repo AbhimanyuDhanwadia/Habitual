@@ -14,7 +14,11 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   }
 } else {
   // Relies on GOOGLE_APPLICATION_CREDENTIALS pointing to a file
-  admin.initializeApp();
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.NODE_ENV !== 'production') {
+    admin.initializeApp();
+  } else {
+    throw new Error('Firebase Admin credentials are required in production. Set FIREBASE_SERVICE_ACCOUNT or GOOGLE_APPLICATION_CREDENTIALS.');
+  }
 }
 
 export default admin;
