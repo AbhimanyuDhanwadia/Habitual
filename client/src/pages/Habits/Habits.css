@@ -56,4 +56,18 @@
 @media (max-width: 768px) {
   .habits-page { padding: var(--space-4); }
   .habits-grid { grid-template-columns: 1fr; }
+  .habits-tabs {
+    margin-left: calc(var(--space-4) * -1);
+    margin-right: calc(var(--space-4) * -1);
+    padding-inline: var(--space-4);
+    scroll-snap-type: x proximity;
+  }
+  .habit-tab {
+    min-height: 44px;
+    scroll-snap-align: start;
+  }
+  .habit-card-main,
+  .habit-details {
+    padding-inline: var(--space-4);
+  }
 }

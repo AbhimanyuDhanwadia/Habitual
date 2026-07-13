@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -16,6 +16,7 @@ import Streaks from './pages/Streaks/Streaks';
 import Friends from './pages/Friends/Friends';
 import Account from './pages/Account/Account';
 import './styles/global.css';
+import './App.css';
 
 function AppLayout() {
   const { isAuthenticated } = useAuth();
@@ -27,8 +28,17 @@ function AppLayout() {
   const isPublicPage = publicPages.includes(location.pathname);
   const showShell = isAuthenticated && !isPublicPage;
 
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    document.body.classList.toggle('sidebar-lock', sidebarOpen && showShell);
+    return () => document.body.classList.remove('sidebar-lock');
+  }, [sidebarOpen, showShell]);
+
   return (
-    <div className="app">
+    <div className={`app ${showShell ? 'app-shell' : 'app-public'} ${sidebarOpen ? 'sidebar-is-open' : ''}`}>
       {showShell && (
         <>
           <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
@@ -38,11 +48,6 @@ function AppLayout() {
 
       <main
         className={showShell ? 'app-main with-shell' : 'app-main'}
-        style={showShell ? {
-          marginLeft: 'var(--sidebar-width)',
-          marginTop: 'var(--header-height)',
-          minHeight: 'calc(100vh - var(--header-height))',
-        } : undefined}
       >
         <Routes>
           <Route path="/" element={<Landing />} />

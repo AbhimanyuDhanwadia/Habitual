@@ -336,10 +336,58 @@
   }
 
   .tasks-sidebar {
-    order: -1;
-    flex-direction: row;
-    overflow-x: auto;
+    flex-direction: column;
+    overflow-x: visible;
   }
 
-  .tasks-sidebar > * { min-width: 280px; }
+  .tasks-sidebar > * { min-width: 0; }
+}
+
+@media (max-width: 640px) {
+  .daily-tasks {
+    padding: var(--space-3);
+    gap: var(--space-4);
+  }
+
+  .tasks-header {
+    margin-bottom: var(--space-4);
+  }
+
+  .date-nav {
+    padding: var(--space-2);
+  }
+
+  .date-nav-center {
+    flex-direction: column;
+    gap: var(--space-1);
+    text-align: center;
+  }
+
+  .date-nav-label {
+    font-size: var(--text-xs);
+  }
+
+  .add-task-form {
+    gap: var(--space-2);
+  }
+
+  .task-item {
+    align-items: flex-start;
+    padding: var(--space-3);
+  }
+
+  .task-checkbox,
+  .task-delete-btn {
+    min-width: 44px;
+    min-height: 44px;
+    margin-top: -0.35rem;
+  }
+
+  .task-delete-btn {
+    opacity: 1;
+  }
+
+  .heatmap-card {
+    padding: var(--space-4);
+  }
 }

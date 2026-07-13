@@ -77,7 +77,7 @@ export default function Sidebar({ isOpen, onClose }) {
       {/* Mobile overlay */}
       {isOpen && <div className="sidebar-overlay" onClick={onClose} />}
 
-      <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
+      <aside id="app-sidebar" className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
         <nav className="sidebar-nav">
           {navItems.map((item) => (
             <NavLink

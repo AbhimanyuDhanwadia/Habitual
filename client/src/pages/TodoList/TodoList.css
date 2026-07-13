@@ -95,5 +95,16 @@
   .todo-header { flex-direction: column; gap: var(--space-4); }
   .todo-grid { grid-template-columns: 1fr; }
   .todo-filters { flex-direction: column; gap: var(--space-3); align-items: stretch; }
+  .todo-filter-group { overflow-x: auto; }
+  .todo-filter-btn { flex: 1 0 auto; min-height: 44px; }
+  .todo-sort { max-width: none; min-height: 44px; }
+  .todo-card { padding: var(--space-4); }
+  .todo-card-top { align-items: flex-start; flex-direction: column; }
+  .todo-card-actions { flex-direction: column; }
+  .phase-dot { min-width: 44px; min-height: 44px; margin: -0.65rem 0 0 -0.65rem; }
+  .phase-connector { left: calc(var(--space-1) + 10px); }
+  .modal { padding: var(--space-5); max-height: calc(100svh - var(--space-6)); }
   .modal-phase-row { grid-template-columns: 1fr auto; }
+  .modal-phase-row input[type="date"] { grid-column: 1 / -1; }
+  .modal-actions { flex-direction: column-reverse; }
 }

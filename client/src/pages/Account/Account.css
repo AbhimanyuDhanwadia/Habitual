@@ -58,6 +58,18 @@
 
 @media (max-width: 768px) {
   .account-page { padding: var(--space-4); }
+  .account-header { margin-bottom: var(--space-5); }
+  .account-tabs {
+    gap: var(--space-4);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .account-tab { min-height: 44px; }
   .account-grid { grid-template-columns: 1fr; }
   .account-grid > :first-child { border-right: none; border-bottom: 1px solid var(--line); }
+  .account-card { padding: var(--space-5); }
+  .account-edit-actions { flex-direction: column-reverse; }
+  .account-info-row { gap: var(--space-3); }
+  .avatar-selection-grid { grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); }
+  .avatar-option { width: 52px; height: 52px; }
 }

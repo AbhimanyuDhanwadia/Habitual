@@ -22,19 +22,19 @@
 }
 
 .streaks-content {
-  margin-top: var(--spacing-xl);
+  margin-top: var(--space-8);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-lg);
+  gap: var(--space-5);
 }
 
 .calendar-controls {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-xl);
-  margin-bottom: var(--spacing-lg);
+  gap: var(--space-6);
+  margin-bottom: var(--space-5);
 }
 
 .calendar-controls .btn {
@@ -51,4 +51,24 @@
   justify-content: center;
   padding: 4rem;
   color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .streaks-page {
+    padding: var(--space-4);
+  }
+
+  .streaks-content {
+    align-items: stretch;
+    margin-top: var(--space-5);
+  }
+
+  .calendar-controls {
+    gap: var(--space-3);
+    justify-content: space-between;
+  }
+
+  .calendar-controls .btn {
+    min-height: 44px;
+  }
 }
