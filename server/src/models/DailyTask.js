@@ -41,25 +41,8 @@ const dailyTaskSchema = new mongoose.Schema({
 
 // Compound index for fast daily lookups
 dailyTaskSchema.index({ userId: 1, date: 1 });
-dailyTaskSchema.index(
-  { userId: 1, date: 1, habitId: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      isHabitGenerated: true,
-      habitId: { $exists: true },
-    },
-  }
-);
-dailyTaskSchema.index(
-  { userId: 1, date: 1, title: 1, isHabitGenerated: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      isHabitGenerated: false,
-    },
-  }
-);
+dailyTaskSchema.index({ userId: 1, date: 1, isHabitGenerated: 1, habitId: 1 });
+dailyTaskSchema.index({ userId: 1, date: 1, isHabitGenerated: 1, title: 1 });
 
 // When completing a task, set completedAt
 dailyTaskSchema.pre('save', function (next) {
