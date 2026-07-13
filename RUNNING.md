@@ -29,13 +29,11 @@ The backend handles the API, authentication, database models, and gamification l
    ```
 
 3. **Set up environment variables:**
-   The server requires a `.env` file to connect to the database and sign JWTs. We have already created a default one for local development. 
+   The server requires a `.env` file to connect to the database and configure local API/CORS settings.
    Verify that `server/.env` exists and contains:
    ```env
    MONGODB_URI=mongodb://localhost:27017/habitual
-   JWT_SECRET=habitual_dev_secret_key_change_in_production
-   JWT_EXPIRES_IN=7d
-   PORT=5000
+   PORT=5001
    CLIENT_URL=http://localhost:5173
    ```
    *(Note: If you are using MongoDB Atlas, replace the `MONGODB_URI` with your Atlas connection string).*
@@ -51,7 +49,7 @@ The backend handles the API, authentication, database models, and gamification l
    ```bash
    npm run dev
    ```
-   *You should see a message: `🚀 Habitual API running on http://localhost:5000` and `✅ MongoDB connected`.*
+   *You should see a message: `🚀 Habitual API running on http://localhost:5001` and `✅ MongoDB connected`.*
 
 ---
 
@@ -90,5 +88,5 @@ The frontend is a modern React application built with Vite for lightning-fast de
 ## Troubleshooting
 
 - **MongoDB Connection Error (`ECONNREFUSED`):** Make sure your local MongoDB server is actually running. On Mac, if installed via Homebrew, you might need to run `brew services start mongodb-community`.
-- **API Requests Failing / Network Errors:** Ensure the backend is running on port 5000 and the frontend is on port 5173. If your ports differ, update the `API_BASE_URL` in `client/src/services/api.js` and the `CLIENT_URL` in `server/.env`.
+- **API Requests Failing / Network Errors:** Ensure the backend is running on port 5001 and the frontend is on port 5173. If your ports differ, set `VITE_API_BASE_URL` for the frontend and update the `CLIENT_URL` in `server/.env`.
 - **Blank Page on Frontend:** Ensure you ran `npm install` in the `client` directory. If dependencies are missing, the React app won't render.
