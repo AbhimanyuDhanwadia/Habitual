@@ -44,8 +44,13 @@ export function AuthProvider({ children }) {
         );
 
         try {
+          // Get the ID token directly from firebaseUser — this is always reliable
+          // inside the onAuthStateChanged callback, even right after a page reload
+          // from signInWithRedirect (unlike auth.currentUser which may still be null).
+          const idToken = await firebaseUser.getIdToken();
+
           // Try fetching the existing user profile from our backend
-          const res = await authAPI.getMe();
+          const res = await authAPI.getMe(idToken);
           setUser(res.data.user);
           setIsAuthenticated(true);
         } catch (err) {
