@@ -188,13 +188,12 @@ router.post('/', [
       order: count,
     });
 
-    // If this is a manual (non-habit) task, save it as a recurring template
+    // If this is a manual task, save it as a recurring template without an extra user read.
     if (!isHabitGenerated) {
-      const user = await User.findById(req.user._id);
-      if (!user.recurringTasks.includes(title)) {
-        user.recurringTasks.push(title);
-        await user.save();
-      }
+      await User.updateOne(
+        { _id: req.user._id },
+        { $addToSet: { recurringTasks: title } },
+      );
     }
 
     res.status(201).json({ task });
