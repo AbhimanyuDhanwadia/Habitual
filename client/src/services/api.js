@@ -139,7 +139,8 @@ export const authAPI = {
   // register and login are handled by Firebase SDK, but we still need register to create the MongoDB user
   register: (data, token) => api.post('/auth/register', data, token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
   googleLogin: (token) => api.post('/auth/google', {}, token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
-  getMe: () => api.get('/auth/me'),
+  // token is optional — pass it explicitly from onAuthStateChanged to avoid auth.currentUser timing issues on page reload
+  getMe: (token) => api.get('/auth/me', token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
 };
 
 // ---- Tasks API ----
