@@ -22,20 +22,58 @@ export function AuthProvider({ children }) {
 
   // Listen to Firebase Auth state changes
   useEffect(() => {
-    let signingOut = false; // Prevent re-entrant loop when signOut triggers onAuthStateChanged again
+    let signingOut = false;
 
-    // Handle errors that may arise from a cancelled or failed Google redirect.
-    // A successful redirect will trigger onAuthStateChanged automatically.
-    getRedirectResult(auth).catch((err) => {
-      if (err.code && err.code !== 'auth/cancelled-popup-request') {
-        console.error('Google redirect sign-in error:', err);
-        setError(err.message || 'Google sign-in failed. Please try again.');
-        setIsLoading(false);
+    // Firebase 12 requires getRedirectResult to be called and its result handled
+    // to complete signInWithRedirect. We use a shared promise so onAuthStateChanged
+    // can wait for redirect processing before deciding what to do.
+    let resolveRedirectDone;
+    const redirectDone = new Promise((resolve) => { resolveRedirectDone = resolve; });
+
+    const processRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result && result.user) {
+          // ✅ Redirect sign-in completed — create/find user in our backend
+          try {
+            const idToken = await result.user.getIdToken();
+            const res = await authAPI.googleLogin(idToken);
+            setUser(res.data.user);
+            setIsAuthenticated(true);
+          } catch (backendErr) {
+            console.error('Google redirect backend sync failed:', backendErr);
+            const message = backendErr.response?.data?.message || backendErr.message || 'Google login failed.';
+            setError(message);
+            signingOut = true;
+            try { await signOut(auth); } catch { /* ignore */ }
+            signingOut = false;
+          }
+          setIsLoading(false);
+          resolveRedirectDone(true); // Signal: redirect was handled, onAuthStateChanged should skip
+          return;
+        }
+        // No pending redirect — signal onAuthStateChanged to proceed normally
+        resolveRedirectDone(false);
+      } catch (err) {
+        // Redirect failed or was cancelled
+        if (err.code && err.code !== 'auth/cancelled-popup-request') {
+          console.error('Google redirect sign-in error:', err);
+          setError(err.message || 'Google sign-in failed. Please try again.');
+          setIsLoading(false);
+        }
+        resolveRedirectDone(false);
       }
-    });
+    };
+
+    processRedirectResult();
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (signingOut) return; // Already handling sign-out, skip
+      if (signingOut) return;
+
+      // Wait for getRedirectResult to finish before acting — this prevents
+      // onAuthStateChanged from racing with the redirect processing above.
+      const redirectHandled = await redirectDone;
+      if (redirectHandled) return; // Redirect was already handled above
 
       if (firebaseUser) {
         // Detect if the signed-in user used Google as their provider
@@ -44,9 +82,7 @@ export function AuthProvider({ children }) {
         );
 
         try {
-          // Get the ID token directly from firebaseUser — this is always reliable
-          // inside the onAuthStateChanged callback, even right after a page reload
-          // from signInWithRedirect (unlike auth.currentUser which may still be null).
+          // Get the ID token directly from firebaseUser — always safe inside this callback
           const idToken = await firebaseUser.getIdToken();
 
           // Try fetching the existing user profile from our backend
@@ -69,7 +105,7 @@ export function AuthProvider({ children }) {
               setUser(null);
               setIsAuthenticated(false);
               signingOut = true;
-              try { await signOut(auth); } catch {}
+              try { await signOut(auth); } catch { /* ignore */ }
               signingOut = false;
             }
           } else {
