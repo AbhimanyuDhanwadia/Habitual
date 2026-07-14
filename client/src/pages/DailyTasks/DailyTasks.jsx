@@ -19,6 +19,7 @@ export default function DailyTasks() {
   const inputRef = useRef(null);
   const { showNotification } = useNotification();
   const [isAdding, setIsAdding] = useState(false);
+  const hasLoadedOnceRef = useRef(false);
 
   const fetchTasks = async (date) => {
     try {
@@ -50,8 +51,9 @@ export default function DailyTasks() {
 
   useEffect(() => {
     const init = async () => {
-      setLoading(true);
+      setLoading(!hasLoadedOnceRef.current);
       await Promise.all([fetchTasks(selectedDate), fetchHistory(), fetchTodos()]);
+      hasLoadedOnceRef.current = true;
       setLoading(false);
     };
     init();
@@ -61,15 +63,31 @@ export default function DailyTasks() {
     e.preventDefault();
     if (!newTask.trim() || isAdding) return;
 
+    const title = newTask.trim();
+    const optimisticTask = {
+      _id: `temp-${Date.now()}`,
+      title,
+      date: `${selectedDate}T00:00:00.000Z`,
+      completed: false,
+      isHabitGenerated: false,
+      optimistic: true,
+    };
+
+    setTasks(prevTasks => [...prevTasks, optimisticTask]);
+    setNewTask('');
+    inputRef.current?.focus();
+
     try {
       setIsAdding(true);
-      const res = await tasksAPI.create({ title: newTask.trim(), date: selectedDate });
-      setTasks([...tasks, res.data.task]);
-      setNewTask('');
-      inputRef.current?.focus();
+      const res = await tasksAPI.create({ title, date: selectedDate });
+      setTasks(prevTasks => prevTasks.map(task => (
+        task._id === optimisticTask._id ? res.data.task : task
+      )));
       showNotification({ message: 'Task added successfully', type: 'success' });
     } catch (err) {
       console.error('Error creating task:', err);
+      setTasks(prevTasks => prevTasks.filter(task => task._id !== optimisticTask._id));
+      setNewTask(title);
       const msg = err.response ? `API Error ${err.response.status}` : err.message;
       showNotification({ message: `Failed to add task: ${msg}`, type: 'error' });
     } finally {
