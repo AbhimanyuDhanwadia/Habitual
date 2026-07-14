@@ -87,14 +87,14 @@
   font-family: 'Inter', sans-serif;
 }
 
-.task-list {
+.calendar-heatmap-full .task-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
   overflow: hidden;
 }
 
-.task-item {
+.calendar-heatmap-full .task-item {
   display: flex;
   align-items: center;
   font-size: 0.75rem;
@@ -108,12 +108,12 @@
   font-family: 'Inter', sans-serif;
 }
 
-.task-item.completed .task-title {
+.calendar-heatmap-full .task-item.completed .task-title {
   text-decoration: line-through;
   color: #7a7a7a;
 }
 
-.task-dot {
+.calendar-heatmap-full .task-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -122,21 +122,81 @@
   flex-shrink: 0;
 }
 
-.task-item.completed .task-dot {
+.calendar-heatmap-full .task-item.completed .task-dot {
   background-color: #b87a0b;
 }
 
-.task-title {
+.calendar-heatmap-full .task-title {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.task-more {
+.calendar-heatmap-full .task-more {
   font-size: 0.75rem;
   color: #b87a0b;
   text-align: center;
   font-weight: bold;
   margin-top: 2px;
   font-family: 'Inter', sans-serif;
+}
+
+@media (max-width: 768px) {
+  .calendar-heatmap-full {
+    padding: 1rem;
+  }
+  .calendar-header-full {
+    margin-bottom: 1.5rem;
+  }
+  .calendar-header-full h3 {
+    font-size: 1.3rem;
+  }
+  .calendar-grid-full {
+    gap: 4px;
+  }
+  .calendar-cell-full {
+    min-height: auto;
+    /* aspect-ratio: 1 keeps it square, removing 120px min-height allows shrinking */
+  }
+  .cell-content-layer {
+    padding: 4px;
+  }
+  .date-label {
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+  }
+  .calendar-heatmap-full .task-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 3px;
+    justify-content: flex-end;
+  }
+  .calendar-heatmap-full .task-item {
+    padding: 0;
+    background: transparent;
+  }
+  .calendar-heatmap-full .task-item::before {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: #df9e76;
+  }
+  .calendar-heatmap-full .task-item.completed::before {
+    background-color: #b87a0b;
+  }
+  .calendar-heatmap-full .task-title,
+  .calendar-heatmap-full .task-more {
+    display: none;
+  }
+  .calendar-heatmap-full .task-dot {
+    margin: 0;
+    width: 5px;
+    height: 5px;
+  }
+  .day-name-full {
+    font-size: 0.65rem;
+    margin-bottom: 0.5rem;
+  }
 }
