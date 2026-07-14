@@ -57,6 +57,8 @@ const todoSchema = new mongoose.Schema({
 
 todoSchema.index({ userId: 1, completed: 1 });
 todoSchema.index({ userId: 1, deadline: 1 });
+todoSchema.index({ userId: 1, createdAt: -1 });
+todoSchema.index({ userId: 1, priority: 1 });
 
 // Auto-complete todo when all phases are done
 todoSchema.methods.checkCompletion = function () {
