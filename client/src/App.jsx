@@ -11,13 +11,29 @@ import Auth from './pages/Auth/Auth';
 import './styles/global.css';
 import './App.css';
 
-const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
-const DailyTasks = lazy(() => import('./pages/DailyTasks/DailyTasks'));
-const TodoList = lazy(() => import('./pages/TodoList/TodoList'));
-const Habits = lazy(() => import('./pages/Habits/Habits'));
-const Streaks = lazy(() => import('./pages/Streaks/Streaks'));
-const Friends = lazy(() => import('./pages/Friends/Friends'));
-const Account = lazy(() => import('./pages/Account/Account'));
+const authenticatedRouteImports = [
+  () => import('./pages/Dashboard/Dashboard'),
+  () => import('./pages/DailyTasks/DailyTasks'),
+  () => import('./pages/TodoList/TodoList'),
+  () => import('./pages/Habits/Habits'),
+  () => import('./pages/Streaks/Streaks'),
+  () => import('./pages/Friends/Friends'),
+  () => import('./pages/Account/Account'),
+];
+
+const Dashboard = lazy(authenticatedRouteImports[0]);
+const DailyTasks = lazy(authenticatedRouteImports[1]);
+const TodoList = lazy(authenticatedRouteImports[2]);
+const Habits = lazy(authenticatedRouteImports[3]);
+const Streaks = lazy(authenticatedRouteImports[4]);
+const Friends = lazy(authenticatedRouteImports[5]);
+const Account = lazy(authenticatedRouteImports[6]);
+
+function preloadAuthenticatedRoutes() {
+  authenticatedRouteImports.forEach(loadRoute => {
+    loadRoute().catch(() => {});
+  });
+}
 
 function RouteFallback() {
   return (
@@ -46,6 +62,18 @@ function AppLayout() {
     document.body.classList.toggle('sidebar-lock', sidebarOpen && showShell);
     return () => document.body.classList.remove('sidebar-lock');
   }, [sidebarOpen, showShell]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return undefined;
+
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(preloadAuthenticatedRoutes, { timeout: 2000 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = window.setTimeout(preloadAuthenticatedRoutes, 1000);
+    return () => window.clearTimeout(timeoutId);
+  }, [isAuthenticated]);
 
   return (
     <div className={`app ${showShell ? 'app-shell' : 'app-public'} ${sidebarOpen ? 'sidebar-is-open' : ''}`}>
