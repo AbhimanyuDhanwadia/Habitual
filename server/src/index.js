@@ -19,6 +19,9 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+const serverStartedAt = Date.now();
+const enableRequestTiming = process.env.REQUEST_TIMING !== 'false';
+const slowRequestMs = Number(process.env.SLOW_REQUEST_MS || 750);
 const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
   .split(',')
   .map(origin => origin.trim())
@@ -51,6 +54,32 @@ app.use(express.json({ limit: '5mb' }));
 app.use('/api', apiLimiter);
 app.use('/api/auth', sensitiveLimiter);
 app.use('/api/friends', sensitiveLimiter);
+
+if (enableRequestTiming) {
+  app.use('/api', (req, res, next) => {
+    const startedAt = process.hrtime.bigint();
+    const originalWriteHead = res.writeHead;
+
+    res.writeHead = function writeHeadWithTiming(...args) {
+      const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+      const roundedDuration = Math.round(durationMs);
+      const uptimeSeconds = Math.round((Date.now() - serverStartedAt) / 1000);
+      const isSlow = durationMs >= slowRequestMs;
+
+      if (!res.headersSent) {
+        res.setHeader('X-Response-Time', `${roundedDuration}ms`);
+      }
+
+      if (isSlow || process.env.NODE_ENV !== 'production') {
+        console.log(`[timing] ${req.method} ${req.originalUrl} ${res.statusCode} ${roundedDuration}ms uptime=${uptimeSeconds}s slow=${isSlow}`);
+      }
+
+      return originalWriteHead.apply(this, args);
+    };
+
+    next();
+  });
+}
 
 // Health check
 app.get('/api/health', (req, res) => {
