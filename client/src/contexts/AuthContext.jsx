@@ -5,7 +5,8 @@ import {
   onAuthStateChanged, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut 
 } from 'firebase/auth';
@@ -23,27 +24,63 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let signingOut = false; // Prevent re-entrant loop when signOut triggers onAuthStateChanged again
 
+    // Handle errors that may arise from a cancelled or failed Google redirect.
+    // A successful redirect will trigger onAuthStateChanged automatically.
+    getRedirectResult(auth).catch((err) => {
+      if (err.code && err.code !== 'auth/cancelled-popup-request') {
+        console.error('Google redirect sign-in error:', err);
+        setError(err.message || 'Google sign-in failed. Please try again.');
+        setIsLoading(false);
+      }
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (signingOut) return; // Already handling sign-out, skip
 
       if (firebaseUser) {
+        // Detect if the signed-in user used Google as their provider
+        const isGoogleUser = firebaseUser.providerData.some(
+          (p) => p.providerId === 'google.com'
+        );
+
         try {
+          // Try fetching the existing user profile from our backend
           const res = await authAPI.getMe();
           setUser(res.data.user);
           setIsAuthenticated(true);
         } catch (err) {
-          console.error("Failed to fetch user profile:", err);
-          // User exists in Firebase but not in our MongoDB — sign them out
-          // to avoid an infinite loop.
-          setUser(null);
-          setIsAuthenticated(false);
-          signingOut = true;
-          try {
-            await signOut(auth);
-          } catch (signOutErr) {
-            console.error("Sign out error:", signOutErr);
+          if (isGoogleUser) {
+            // User exists in Firebase but not yet in our MongoDB (first-time Google sign-in).
+            // Call googleLogin to create their profile in our backend.
+            try {
+              const idToken = await firebaseUser.getIdToken();
+              const res = await authAPI.googleLogin(idToken);
+              setUser(res.data.user);
+              setIsAuthenticated(true);
+            } catch (googleErr) {
+              console.error('Google backend sync failed:', googleErr);
+              let message = googleErr.response?.data?.message || googleErr.message || 'Google login failed.';
+              setError(message);
+              setUser(null);
+              setIsAuthenticated(false);
+              signingOut = true;
+              try { await signOut(auth); } catch {}
+              signingOut = false;
+            }
+          } else {
+            // Non-Google user exists in Firebase but not in our MongoDB — sign them out
+            // to avoid an infinite loop.
+            console.error('Failed to fetch user profile:', err);
+            setUser(null);
+            setIsAuthenticated(false);
+            signingOut = true;
+            try {
+              await signOut(auth);
+            } catch (signOutErr) {
+              console.error('Sign out error:', signOutErr);
+            }
+            signingOut = false;
           }
-          signingOut = false;
         }
       } else {
         const localToken = localStorage.getItem('habitual_token');
@@ -147,13 +184,13 @@ export function AuthProvider({ children }) {
     setError(null);
     try {
       const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
-      const token = await userCredential.user.getIdToken();
-      const res = await authAPI.googleLogin(token);
-      setUser(res.data.user);
-      setIsAuthenticated(true);
-      setIsLoading(false);
-      return { success: true, message: res.data.message || "Welcome back!" };
+      // Always prompt the user to pick an account (useful for multi-account users)
+      provider.setCustomParameters({ prompt: 'select_account' });
+      // Redirect instead of popup — no extra window on desktop or smartphone.
+      // onAuthStateChanged will handle the result when the user returns to the app.
+      await signInWithRedirect(auth, provider);
+      // The browser navigates away here; code below is only reached on error.
+      return { success: true };
     } catch (err) {
       console.error(err);
       let message = err.message || 'Google Login failed';
