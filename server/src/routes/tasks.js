@@ -25,22 +25,27 @@ const getDayBounds = (dateValue) => {
   return { startOfDay, endOfDay };
 };
 
-const buildGeneratedTaskOps = async (userId, startOfDay) => {
-  const tasks = await DailyTask.find({
-    userId,
-    date: { $gte: startOfDay, $lt: new Date(startOfDay.getTime() + 86400000) },
-  }).sort({ order: 1, createdAt: 1 });
-
-  const user = await User.findById(userId).populate('adoptedHabits');
+const buildGeneratedTaskPayload = async (userId, startOfDay) => {
+  const endOfDay = new Date(startOfDay.getTime() + 86400000);
+  const [tasks, user] = await Promise.all([
+    DailyTask.find({
+      userId,
+      date: { $gte: startOfDay, $lt: endOfDay },
+    }).sort({ order: 1, createdAt: 1 }).lean(),
+    User.findById(userId)
+      .select('adoptedHabits recurringTasks')
+      .populate({ path: 'adoptedHabits', select: 'title icon' })
+      .lean(),
+  ]);
   const ops = [];
 
   if (user?.adoptedHabits?.length > 0) {
-    const existingHabitIds = tasks
+    const existingHabitIds = new Set(tasks
       .filter(t => t.isHabitGenerated && t.habitId)
-      .map(t => t.habitId.toString());
+      .map(t => t.habitId.toString()));
 
     for (const habit of user.adoptedHabits) {
-      if (habit && !existingHabitIds.includes(habit._id.toString())) {
+      if (habit && !existingHabitIds.has(habit._id.toString())) {
         const doc = {
           userId,
           title: `${habit.icon} ${habit.title}`,
@@ -67,12 +72,12 @@ const buildGeneratedTaskOps = async (userId, startOfDay) => {
   }
 
   if (user?.recurringTasks?.length > 0) {
-    const existingManualTitles = tasks
+    const existingManualTitles = new Set(tasks
       .filter(t => !t.isHabitGenerated)
-      .map(t => t.title);
+      .map(t => t.title));
 
     for (const title of user.recurringTasks) {
-      if (!existingManualTitles.includes(title)) {
+      if (!existingManualTitles.has(title)) {
         const doc = {
           userId,
           title,
@@ -97,7 +102,7 @@ const buildGeneratedTaskOps = async (userId, startOfDay) => {
     }
   }
 
-  return ops;
+  return { tasks, ops };
 };
 
 // GET /api/tasks?date=YYYY-MM-DD
@@ -134,17 +139,19 @@ router.post('/generate', [
       return res.status(400).json({ message: 'Invalid date' });
     }
 
-    const ops = await buildGeneratedTaskOps(req.user._id, bounds.startOfDay);
+    const { tasks: existingTasks, ops } = await buildGeneratedTaskPayload(req.user._id, bounds.startOfDay);
     if (ops.length > 0) {
       await DailyTask.bulkWrite(ops, { ordered: false });
+
+      const tasks = await DailyTask.find({
+        userId: req.user._id,
+        date: { $gte: bounds.startOfDay, $lt: bounds.endOfDay },
+      }).sort({ order: 1, createdAt: 1 }).lean();
+
+      return res.json({ tasks });
     }
 
-    const tasks = await DailyTask.find({
-      userId: req.user._id,
-      date: { $gte: bounds.startOfDay, $lt: bounds.endOfDay },
-    }).sort({ order: 1, createdAt: 1 });
-
-    res.json({ tasks });
+    res.json({ tasks: existingTasks });
   } catch (error) {
     console.error('Generate tasks error:', error);
     res.status(500).json({ message: 'Error generating tasks' });
