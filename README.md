@@ -1,6 +1,6 @@
 # Habitual
 
-**Habitual** is a Gamified Productivity & Wellness Hub designed to make daily tasks and habit building engaging and fun. Built with a modern full-stack architecture, it combines the appeal of gamification with robust task management.
+**Habitual** is a Gamified Productivity & Wellness Hub designed to make daily tasks and habit building engaging and fun. Built with a modern full-stack architecture, it combines the appeal of gamification with a robust task management system.
 
 ## User Features
 - **User Authentication & Profiles:** Secure signup, login, and personalized user profiles.

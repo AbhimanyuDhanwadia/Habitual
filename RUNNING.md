@@ -1,6 +1,6 @@
 # Running Habitual
 
-Welcome to the Gamified Productivity & Wellness Hub! This project is a full-stack application with a React (Vite) frontend and a Node.js (Express + MongoDB) backend. 
+Welcome to Habitual, the Gamified Productivity & Wellness Hub! This project is a full-stack application with a React (Vite) frontend and a Node.js (Express + MongoDB) backend. 
 
 Follow these detailed steps to get the application running on your local machine.
 
