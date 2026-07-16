@@ -1,4 +1,4 @@
-# Running Habitual
+# Running Habitual App
 
 Welcome to Habitual, the Gamified Productivity & Wellness Hub! This project is a full-stack application with a React (Vite) frontend and a Node.js (Express + MongoDB) backend. 
 
